@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}宿題削除確認 - 能開高受用科目アプリ{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card">
+            <div class="card-header text-center">
+                <h4 class="mb-0">宿題削除確認</h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-danger">
+                    <h5>本当にこの宿題を削除しますか？</h5>
+                    <p class="mb-0">この操作は取り消すことができません。</p>
+                </div>
+                
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h6>宿題情報</h6>
+                        <p><strong>単元:</strong> {{ object.unit }}</p>
+                        <p><strong>問題数:</strong> {{ object.question_count }}問</p>
+                        <p><strong>公開範囲:</strong> {{ object.get_publish_scope_display }}</p>
+                        <p><strong>公開状況:</strong> 
+                            {% if object.is_published %}
+                                <span class="badge bg-success">公開中</span>
+                            {% else %}
+                                <span class="badge bg-warning">非公開</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-danger">削除する</button>
+                        <a href="{% url 'admin_panel:homework_list' %}" class="btn btn-outline-secondary">キャンセル</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

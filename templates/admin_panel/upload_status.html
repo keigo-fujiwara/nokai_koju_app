@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+
+{% block title %}アップロード状況 - 能開高受用科目アプリ{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">アップロード状況</h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">最近のアップロード</h5>
+            </div>
+            <div class="card-body">
+                {% if uploads %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>教科</th>
+                                    <th>ファイル名</th>
+                                    <th>ステータス</th>
+                                    <th>アップロード日時</th>
+                                    <th>処理日時</th>
+                                    <th>結果</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for upload in uploads %}
+                                <tr>
+                                    <td>{{ upload.get_subject_display }}</td>
+                                    <td>{{ upload.file.name|slice:"12:" }}</td>
+                                    <td>
+                                        {% if upload.status == 'pending' %}
+                                            <span class="badge bg-secondary">処理待ち</span>
+                                        {% elif upload.status == 'processing' %}
+                                            <span class="badge bg-warning">処理中</span>
+                                        {% elif upload.status == 'completed' %}
+                                            <span class="badge bg-success">完了</span>
+                                        {% elif upload.status == 'failed' %}
+                                            <span class="badge bg-danger">失敗</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ upload.uploaded_at|date:"Y-m-d H:i" }}</td>
+                                    <td>
+                                        {% if upload.processed_at %}
+                                            {{ upload.processed_at|date:"Y-m-d H:i" }}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if upload.error_message %}
+                                            <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                    data-bs-toggle="modal" data-bs-target="#errorModal{{ upload.id }}">
+                                                エラー詳細
+                                            </button>
+                                        {% elif upload.status == 'completed' %}
+                                            <span class="text-success">{{ upload.error_message }}</span>
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted">アップロード履歴がありません。</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- エラーモーダル -->
+{% for upload in uploads %}
+    {% if upload.error_message %}
+    <div class="modal fade" id="errorModal{{ upload.id }}" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">エラー詳細</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <pre>{{ upload.error_message }}</pre>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">閉じる</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+{% endfor %}
+
+<script>
+// 5秒ごとにページをリロード（処理中のアップロードがある場合）
+{% if uploads %}
+    {% for upload in uploads %}
+        {% if upload.status == 'processing' %}
+            setTimeout(function() {
+                location.reload();
+            }, 5000);
+            break;
+        {% endif %}
+    {% endfor %}
+{% endif %}
+</script>
+{% endblock %}

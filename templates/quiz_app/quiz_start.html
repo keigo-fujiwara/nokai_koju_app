@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}クイズ開始 - {{ unit }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="mb-0">クイズ開始</h3>
+                </div>
+                <div class="card-body text-center">
+                    <h4 class="mb-3">{{ unit }}</h4>
+                    <p class="mb-4">問題数: {{ question_count }}問</p>
+                    
+                    <div class="alert alert-info">
+                        <h5>クイズのルール</h5>
+                        <ul class="list-unstyled mb-0">
+                            <li>• 1問につき20秒の制限時間があります</li>
+                            <li>• 時間切れになると自動で次の問題に進みます</li>
+                            <li>• 前の問題に戻ることはできません</li>
+                            <li>• 単位が必要な問題は、入力欄の横に単位が表示されます</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <p class="mb-3">スペースキーを押すか、下のボタンをクリックしてクイズを開始してください</p>
+                        <button class="btn btn-primary btn-lg" data-href="{% url 'quiz_app:quiz_question' session.id 1 %}">
+                            クイズ開始
+                        </button>
+                    </div>
+                    
+                    <!-- カウントダウン表示エリア -->
+                    <div id="countdown-display" class="mt-4" style="display: none;">
+                        <div class="countdown-number" style="font-size: 8rem; font-weight: bold; color: #007bff;">
+                            <span id="countdown-number">3</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script src="{% static 'js/quiz.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // スペースキーでの開始
+    document.addEventListener('keydown', function(event) {
+        if (event.code === 'Space') {
+            event.preventDefault();
+            const button = document.querySelector('button[data-href]');
+            if (button) {
+                button.click();
+            }
+        }
+    });
+    
+    // ボタンクリックでの開始
+    const button = document.querySelector('button[data-href]');
+    if (button) {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const href = this.getAttribute('data-href');
+            if (href) {
+                initializeCountdown(() => {
+                    window.location.href = href;
+                });
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
+{% endblock %}

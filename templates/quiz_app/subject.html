@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ subject.label_ja }} - 能開高受用科目アプリ{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'quiz_app:home' %}">ホーム</a></li>
+                <li class="breadcrumb-item active">{{ subject.label_ja }}</li>
+            </ol>
+        </nav>
+        
+        <h1 class="mb-4">{{ subject.label_ja }}</h1>
+    </div>
+</div>
+
+<div class="row">
+    {% for unit in units %}
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">{{ unit.grade_year }} {{ unit.category }}</h5>
+                <p class="card-text">
+                    {% if subject.code == 'science' %}
+                        {% if '化学' in unit.category %}
+                            物質の性質や変化について学びます
+                        {% elif '物理' in unit.category %}
+                            力やエネルギーについて学びます
+                        {% elif '生物' in unit.category %}
+                            生命現象について学びます
+                        {% else %}
+                            理科の基礎知識を学びます
+                        {% endif %}
+                    {% else %}
+                        {% if '地理' in unit.category %}
+                            世界や日本の地理について学びます
+                        {% elif '歴史' in unit.category %}
+                            日本の歴史について学びます
+                        {% elif '公民' in unit.category %}
+                            政治や経済について学びます
+                        {% else %}
+                            社会の基礎知識を学びます
+                        {% endif %}
+                    {% endif %}
+                </p>
+            </div>
+            <div class="card-footer">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'quiz_app:unit' unit.id %}" class="btn btn-primary">
+                        単元を選択
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="alert alert-info">
+            <p class="mb-0">この教科にはまだ単元が登録されていません。</p>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

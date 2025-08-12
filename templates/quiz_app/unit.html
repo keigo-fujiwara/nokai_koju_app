@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ unit.grade_year }} {{ unit.category }} - 能開高受用科目アプリ{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'quiz_app:home' %}">ホーム</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'quiz_app:subject' unit.subject.id %}">{{ unit.subject.label_ja }}</a></li>
+                <li class="breadcrumb-item active">{{ unit.grade_year }} {{ unit.category }}</li>
+            </ol>
+        </nav>
+        
+        <h1 class="mb-4">{{ unit.grade_year }} {{ unit.category }}</h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">クイズ設定</h5>
+            </div>
+            <div class="card-body">
+                <p class="card-text">
+                    この単元には <strong>{{ question_count }}</strong> 問の問題があります。
+                </p>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="card border-primary">
+                            <div class="card-body text-center">
+                                <h5 class="card-title">10問モード</h5>
+                                <p class="card-text">1問10点 × 10問 = 100点満点</p>
+                                <a href="{% url 'quiz_app:quiz_start' unit.id 10 %}" class="btn btn-primary">
+                                    10問で開始
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="card border-success">
+                            <div class="card-body text-center">
+                                <h5 class="card-title">20問モード</h5>
+                                <p class="card-text">1問5点 × 20問 = 100点満点</p>
+                                <a href="{% url 'quiz_app:quiz_start' unit.id 20 %}" class="btn btn-success">
+                                    20問で開始
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">クイズのルール</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li class="mb-2">
+                        <i class="bi bi-keyboard"></i> スペースキーで開始
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-clock"></i> 1問20秒制限
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-arrow-right"></i> 前の問題には戻れません
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle"></i> 結果は即座に表示
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+
+{% block title %}宿題管理 - 能開高受用科目アプリ{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>宿題管理</h1>
+            <a href="{% url 'admin_panel:homework_create' %}" class="btn btn-primary">
+                <i class="bi bi-plus"></i> 新規作成
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">宿題一覧</h5>
+            </div>
+            <div class="card-body">
+                {% if homeworks %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>単元</th>
+                                    <th>問題数</th>
+                                    <th>公開範囲</th>
+                                    <th>公開状況</th>
+                                    <th>作成日</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for homework in homeworks %}
+                                <tr>
+                                    <td>{{ homework.id }}</td>
+                                    <td>{{ homework.unit }}</td>
+                                    <td>{{ homework.question_count }}問</td>
+                                    <td>{{ homework.get_publish_scope_display }}</td>
+                                    <td>
+                                        {% if homework.is_published %}
+                                            <span class="badge bg-success">公開中</span>
+                                        {% else %}
+                                            <span class="badge bg-warning">非公開</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ homework.created_at|date:"Y-m-d" }}</td>
+                                    <td>
+                                        <a href="{% url 'admin_panel:homework_edit' homework.id %}" class="btn btn-sm btn-outline-primary">編集</a>
+                                        <a href="{% url 'admin_panel:homework_delete' homework.id %}" class="btn btn-sm btn-outline-danger" onclick="return confirm('本当に削除しますか？')">削除</a>
+                                        {% if homework.is_published %}
+                                            <a href="{% url 'quiz_app:homework' homework.public_slug %}" class="btn btn-sm btn-outline-info" target="_blank">表示</a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <p class="text-muted">宿題が作成されていません。</p>
+                        <a href="{% url 'admin_panel:homework_create' %}" class="btn btn-primary">宿題を作成</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

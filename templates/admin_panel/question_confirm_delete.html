@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block title %}問題削除確認 - 能開高受用科目アプリ{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card">
+            <div class="card-header text-center">
+                <h4 class="mb-0">問題削除確認</h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-danger">
+                    <h5>本当にこの問題を削除しますか？</h5>
+                    <p class="mb-0">この操作は取り消すことができません。</p>
+                </div>
+                
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h6>問題情報</h6>
+                        <p><strong>単元:</strong> {{ object.unit }}</p>
+                        <p><strong>問題文:</strong> {{ object.text|truncatechars:100 }}</p>
+                        <p><strong>正解:</strong> {{ object.correct_answer }}</p>
+                    </div>
+                </div>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-danger">削除する</button>
+                        <a href="{% url 'admin_panel:questions' %}" class="btn btn-outline-secondary">キャンセル</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

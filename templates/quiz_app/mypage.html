@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+
+{% block title %}マイページ - 能開高受用科目アプリ{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">マイページ</h1>
+    </div>
+</div>
+
+{% if user.role == 'student' %}
+<div class="row">
+    <div class="col-md-3 mb-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title">総プレイ数</h5>
+                <p class="card-text display-6">{{ total_sessions|default:"0" }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title">総解答数</h5>
+                <p class="card-text display-6">{{ total_attempts|default:"0" }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title">平均時間</h5>
+                <p class="card-text display-6">{{ average_time_per_question|floatformat:1|default:"0" }}秒</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title">正答率</h5>
+                <p class="card-text display-6">{{ correct_rate|floatformat:1|default:"0" }}%</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">最近の学習記録</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_sessions %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>日時</th>
+                                    <th>単元</th>
+                                    <th>問題数</th>
+                                    <th>スコア</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for session in recent_sessions %}
+                                <tr>
+                                    <td>{{ session.started_at|date:"Y-m-d H:i" }}</td>
+                                    <td>{{ session.unit }}</td>
+                                    <td>{{ session.question_count }}問</td>
+                                    <td>{{ session.total_score|default:"-" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted">まだ学習記録がありません。</p>
+                    <a href="{% url 'quiz_app:home' %}" class="btn btn-primary">クイズを始める</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">プロファイル</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>ニックネーム:</strong> {{ user.student_profile.nickname }}</p>
+                <p><strong>学校:</strong> {{ user.student_profile.school }}</p>
+                <p><strong>クラス:</strong> {{ user.student_profile.class_name }}</p>
+                <p><strong>学年:</strong> {{ user.student_profile.grade }}</p>
+                <a href="{% url 'quiz_app:profile_edit' %}" class="btn btn-outline-primary">プロファイル編集</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="alert alert-info">
+            <p class="mb-0">管理者アカウントです。管理画面から各種機能をご利用ください。</p>
+        </div>
+        <a href="{% url 'admin_panel:home' %}" class="btn btn-primary">管理画面へ</a>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">プロファイル</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>名前:</strong> {{ user.admin_profile.name|default:"未設定" }}</p>
+                <p><strong>メール:</strong> {{ user.admin_profile.email|default:"未設定" }}</p>
+                <a href="{% url 'quiz_app:profile_edit' %}" class="btn btn-outline-primary">プロファイル編集</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

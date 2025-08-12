@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+
+{% block title %}問題管理 - 能開高受用科目アプリ{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>問題管理</h1>
+            <a href="{% url 'admin_panel:upload' %}" class="btn btn-primary">
+                <i class="bi bi-upload"></i> 新規アップロード
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <form method="get" class="row g-3">
+                    <div class="col-md-8">
+                        <input type="text" name="search" class="form-control" placeholder="問題文、単元、学年で検索..." value="{{ request.GET.search }}">
+                    </div>
+                    <div class="col-md-4">
+                        <button type="submit" class="btn btn-outline-primary">検索</button>
+                        <a href="{% url 'admin_panel:questions' %}" class="btn btn-outline-secondary">クリア</a>
+                    </div>
+                </form>
+            </div>
+            <div class="card-body">
+                {% if questions %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>単元</th>
+                                    <th>問題文</th>
+                                    <th>正解</th>
+                                    <th>単位</th>
+                                    <th>作成日</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for question in questions %}
+                                <tr>
+                                    <td>{{ question.id }}</td>
+                                    <td>{{ question.unit }}</td>
+                                    <td>{{ question.text|truncatechars:50 }}</td>
+                                    <td>{{ question.correct_answer|truncatechars:20 }}</td>
+                                    <td>
+                                        {% if question.unit_label_text %}
+                                            <span class="badge bg-info">{{ question.unit_label_text }}</span>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ question.created_at|date:"Y-m-d" }}</td>
+                                    <td>
+                                        <a href="{% url 'admin_panel:question_edit' question.id %}" class="btn btn-sm btn-outline-primary">編集</a>
+                                        <a href="{% url 'admin_panel:question_delete' question.id %}" class="btn btn-sm btn-outline-danger" onclick="return confirm('本当に削除しますか？')">削除</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    {% if is_paginated %}
+                    <nav aria-label="ページナビゲーション">
+                        <ul class="pagination justify-content-center">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">最初</a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">前へ</a>
+                                </li>
+                            {% endif %}
+                            
+                            <li class="page-item active">
+                                <span class="page-link">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+                            </li>
+                            
+                            {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">次へ</a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">最後</a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                {% else %}
+                    <div class="text-center py-4">
+                        <p class="text-muted">問題が見つかりませんでした。</p>
+                        <a href="{% url 'admin_panel:upload' %}" class="btn btn-primary">問題をアップロード</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block title %}利用状況分析 - 能開高受用科目アプリ{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">利用状況分析</h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-3 mb-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title">総生徒数</h5>
+                <p class="card-text display-6">{{ total_students|default:"0" }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title">総解答数</h5>
+                <p class="card-text display-6">{{ total_attempts|default:"0" }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title">平均正答率</h5>
+                <p class="card-text display-6">{{ average_score|floatformat:1|default:"0" }}%</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title">総セッション数</h5>
+                <p class="card-text display-6">{{ total_sessions|default:"0" }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">都道府県別利用状況</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">詳細な分析機能は開発中です。</p>
+                <p>現在は基本的な統計情報のみ表示しています。</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">クラス別分析</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">クラス別の詳細分析機能は開発中です。</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

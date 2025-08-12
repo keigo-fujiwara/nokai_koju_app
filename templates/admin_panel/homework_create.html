@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+
+{% block title %}宿題作成 - 能開高受用科目アプリ{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'admin_panel:home' %}">管理画面</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'admin_panel:homework_list' %}">宿題管理</a></li>
+                <li class="breadcrumb-item active">宿題作成</li>
+            </ol>
+        </nav>
+        
+        <h1 class="mb-4">宿題作成</h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">宿題設定</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    {% if form.errors %}
+                        <div class="alert alert-danger">
+                            <ul class="mb-0">
+                                {% for field, errors in form.errors.items %}
+                                    {% for error in errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.unit.id_for_label }}" class="form-label">単元</label>
+                        {{ form.unit }}
+                        {% if form.unit.errors %}
+                            <div class="text-danger">{{ form.unit.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.question_count.id_for_label }}" class="form-label">問題数</label>
+                        {{ form.question_count }}
+                        {% if form.question_count.errors %}
+                            <div class="text-danger">{{ form.question_count.errors.0 }}</div>
+                        {% endif %}
+                        <div class="form-text">10問または20問から選択してください</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.publish_scope.id_for_label }}" class="form-label">公開範囲</label>
+                        {{ form.publish_scope }}
+                        {% if form.publish_scope.errors %}
+                            <div class="text-danger">{{ form.publish_scope.errors.0 }}</div>
+                        {% endif %}
+                        <div class="form-text">クラスまたは学校全体に公開できます</div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'admin_panel:homework_list' %}" class="btn btn-outline-secondary">キャンセル</a>
+                        <button type="submit" class="btn btn-primary">作成</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">宿題について</h5>
+            </div>
+            <div class="card-body">
+                <h6>宿題の特徴</h6>
+                <ul class="small">
+                    <li>指定した単元からランダムに問題を選択</li>
+                    <li>公開URLで生徒がアクセス可能</li>
+                    <li>解答時間や正答率を記録</li>
+                    <li>クラス別の成績分析が可能</li>
+                </ul>
+                
+                <h6>公開範囲</h6>
+                <ul class="small">
+                    <li><strong>クラス:</strong> 特定のクラスのみ</li>
+                    <li><strong>学校:</strong> 学校全体</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

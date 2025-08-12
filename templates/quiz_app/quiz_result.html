@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% load quiz_extras %}
+
+{% block title %}クイズ結果 - {{ session.unit }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <!-- スコア表示 -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="mb-0">クイズ結果</h3>
+                </div>
+                <div class="card-body text-center">
+                    <h2 class="mb-3">{{ session.unit }}</h2>
+                    <div class="score-display">
+                        <h1 class="display-1 text-primary">{{ session.total_score }}</h1>
+                        <h4 class="text-muted">/ 100点</h4>
+                        <p class="mt-2">
+                            <small class="text-muted">
+                                単元正答率: {{ unit_correct_rate }}%
+                            </small>
+                        </p>
+                    </div>
+                                         <p class="mt-3">
+                         問題数: {{ session.question_count }}問<br>
+                         平均解答時間: {{ time_display }}
+                     </p>
+                </div>
+            </div>
+            
+            <!-- 問題詳細 -->
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">問題詳細</h4>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>問題</th>
+                                    <th>あなたの答え</th>
+                                    <th>正解</th>
+                                    <th>結果</th>
+                                    <th>問題正答率</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for attempt in attempts %}
+                                <tr class="{% if attempt.is_correct %}table-success{% else %}table-danger{% endif %}">
+                                    <td>{{ attempt.question.text|truncatechars:50 }}</td>
+                                    <td>{{ attempt.selected_choice_text }}</td>
+                                    <td>{{ attempt.question.correct_answer }}</td>
+                                    <td>
+                                        {% if attempt.is_correct %}
+                                            <span class="badge bg-success">正解</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">不正解</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ attempt.question_correct_rate|default:"0" }}%</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- アクションボタン -->
+            <div class="text-center mt-4">
+                <a href="{% url 'quiz_app:home' %}" class="btn btn-secondary btn-lg me-3">
+                    ホームに戻る
+                </a>
+                {% if session.total_score < 100 %}
+                    <a href="{% url 'quiz_app:quiz_retry_start' session.id %}" class="btn btn-warning btn-lg me-3">
+                        間違いをやり直す
+                    </a>
+                {% endif %}
+                <a href="{% url 'quiz_app:mypage' %}" class="btn btn-primary btn-lg">
+                    マイページ
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

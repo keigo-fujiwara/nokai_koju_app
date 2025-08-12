@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+
+{% block title %}XLSMアップロード - 能開高受用科目アプリ{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">XLSMファイルアップロード</h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">ファイルアップロード</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    {% if form.errors %}
+                        <div class="alert alert-danger">
+                            <ul class="mb-0">
+                                {% for field, errors in form.errors.items %}
+                                    {% for error in errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.subject.id_for_label }}" class="form-label">教科</label>
+                        {{ form.subject }}
+                        {% if form.subject.errors %}
+                            <div class="text-danger">{{ form.subject.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.file.id_for_label }}" class="form-label">XLSMファイル</label>
+                        {{ form.file }}
+                        {% if form.file.errors %}
+                            <div class="text-danger">{{ form.file.errors.0 }}</div>
+                        {% endif %}
+                        <div class="form-text">XLSMファイルを選択してください。ファイルサイズは10MB以下にしてください。</div>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">アップロード</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">ファイル形式</h5>
+            </div>
+            <div class="card-body">
+                <h6>必要な列構成：</h6>
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>列</th>
+                            <th>内容</th>
+                            <th>必須</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>A</td>
+                            <td>問題ID</td>
+                            <td>○</td>
+                        </tr>
+                        <tr>
+                            <td>B</td>
+                            <td>単元</td>
+                            <td>○</td>
+                        </tr>
+                        <tr>
+                            <td>C</td>
+                            <td>問題文</td>
+                            <td>○</td>
+                        </tr>
+                        <tr>
+                            <td>D</td>
+                            <td>正解</td>
+                            <td>○</td>
+                        </tr>
+                        <tr>
+                            <td>E</td>
+                            <td>別解</td>
+                            <td>×</td>
+                        </tr>
+                        <tr>
+                            <td>F</td>
+                            <td>問題タイプ</td>
+                            <td>○</td>
+                        </tr>
+                        <tr>
+                            <td>G-L</td>
+                            <td>選択肢1-6</td>
+                            <td>選択問題の場合</td>
+                        </tr>
+                        <tr>
+                            <td>M</td>
+                            <td>単位</td>
+                            <td>×</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h6>問題タイプ：</h6>
+                <ul class="small">
+                    <li><strong>text</strong>: 記述問題（従来通り）</li>
+                    <li><strong>choice</strong>: 選択問題（選択肢F-K列を使用）</li>
+                </ul>
+                
+                                 <h6>注意事項：</h6>
+                 <ul class="small">
+                     <li>ヘッダー行は1行目に配置</li>
+                     <li>データは2行目から開始</li>
+                     <li>単元名は「中1化学」「中2物理」の形式</li>
+                     <li>別解は「/」「、」「;」で区切り</li>
+                     <li>選択問題は最大6つの選択肢まで対応</li>
+                     <li>単位フィールドが空の場合、問題文から自動抽出を試行</li>
+                     <li>単位例：g、kg、m、cm、l、ml</li>
+                 </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

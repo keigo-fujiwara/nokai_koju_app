@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+
+{% block title %}ランキング - 能開高受用科目アプリ{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">匿名ランキング</h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">総プレイ数ランキング</h5>
+            </div>
+            <div class="card-body">
+                {% if play_count_ranking %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>順位</th>
+                                    <th>プレイ数</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for rank in play_count_ranking %}
+                                <tr>
+                                    <td>
+                                        {% if forloop.counter == 1 %}
+                                            <span class="badge bg-warning">🥇</span>
+                                        {% elif forloop.counter == 2 %}
+                                            <span class="badge bg-secondary">🥈</span>
+                                        {% elif forloop.counter == 3 %}
+                                            <span class="badge bg-warning">🥉</span>
+                                        {% else %}
+                                            {{ forloop.counter }}
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ rank.total_sessions }}回</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted">まだランキングデータがありません。</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">平均解答時間ランキング</h5>
+            </div>
+            <div class="card-body">
+                {% if avg_time_ranking %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>順位</th>
+                                    <th>平均時間</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for rank in avg_time_ranking %}
+                                <tr>
+                                    <td>
+                                        {% if forloop.counter == 1 %}
+                                            <span class="badge bg-warning">🥇</span>
+                                        {% elif forloop.counter == 2 %}
+                                            <span class="badge bg-secondary">🥈</span>
+                                        {% elif forloop.counter == 3 %}
+                                            <span class="badge bg-warning">🥉</span>
+                                        {% else %}
+                                            {{ forloop.counter }}
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ rank.avg_time|floatformat:1 }}秒</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted">まだランキングデータがありません。</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="alert alert-info">
+            <h6>ランキングについて</h6>
+            <ul class="mb-0">
+                <li>ユーザー名は匿名で表示されます</li>
+                <li>上位10名のみ表示されます</li>
+                <li>データはリアルタイムで更新されます</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

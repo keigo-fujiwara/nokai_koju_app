@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% load quiz_extras %}
+{% load static %}
+
+{% block title %}問題 {{ question_number }} - {{ session.unit }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            
+            <!-- 進行状況バー -->
+            <div class="progress mb-3">
+                <div class="progress-bar" role="progressbar" 
+                     style="width: {% widthratio question_number total_questions 100 %}%"
+                     aria-valuenow="{{ question_number }}" 
+                     aria-valuemin="0" 
+                     aria-valuemax="{{ total_questions }}">
+                    {{ question_number }} / {{ total_questions }}
+                </div>
+            </div>
+            
+            <!-- タイマー -->
+            <div class="text-center mb-4">
+                <div class="timer-display h2 text-primary" id="timer">20</div>
+                <div class="progress">
+                    <div class="progress-bar bg-warning" id="timer-progress" 
+                         role="progressbar" style="width: 100%"></div>
+                </div>
+            </div>
+            
+            <!-- 問題カード -->
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">問題 {{ question_number }}</h4>
+                </div>
+                <div class="card-body">
+                    <!-- 問題文 -->
+                    <div class="mb-4">
+                        <h5>問題文:</h5>
+                        <p class="lead">{{ question.text }}</p>
+                    </div>
+                    
+                    <!-- 解答フォーム -->
+                    <form id="answer-form" method="post" action="{% url 'quiz_app:submit_answer' session.id question_number %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="time_spent" id="time-spent" value="0">
+                        <div class="mb-3">
+                            <h5>解答:</h5>
+                            
+                                                         {% if question.question_type == 'choice' %}
+                                 <!-- 選択問題 -->
+                                 <div class="choice-options">
+                                     {% for choice in question.shuffled_choices %}
+                                         <div class="choice-item mb-2" 
+                                              data-value="{{ forloop.counter }}"
+                                              data-choice="{{ choice }}">
+                                             <div class="choice-content">
+                                                 <span class="choice-number">{{ forloop.counter }}.</span>
+                                                 <span class="choice-text">{{ choice }}</span>
+                                             </div>
+                                         </div>
+                                     {% endfor %}
+                                     <input type="hidden" name="answer_1" id="selected_choice" value="">
+                                 </div>
+                            {% else %}
+                                <!-- 記述問題 -->
+                                {% if question.parts_count == 1 %}
+                                    <!-- 単一解答欄 -->
+                                    <div class="input-group">
+                                        <input type="text" 
+                                               class="form-control form-control-lg" 
+                                               name="answer_1" 
+                                               id="answer_1" 
+                                               placeholder="答えを入力してください"
+                                               autocomplete="off">
+                                        {% if question.unit_label_text %}
+                                            <span class="input-group-text">{{ question.unit_label_text }}</span>
+                                        {% endif %}
+                                    </div>
+                                {% else %}
+                                    <!-- 複数解答欄（・区切り） -->
+                                    {% for i in question.parts_count|get_range %}
+                                        <div class="input-group mb-2">
+                                            <input type="text" 
+                                                   class="form-control" 
+                                                   name="answer_{{ forloop.counter }}" 
+                                                   id="answer_{{ forloop.counter }}" 
+                                                   placeholder="答え{{ forloop.counter }}"
+                                                   autocomplete="off">
+                                            {% if question.unit_label_text and forloop.last %}
+                                                <span class="input-group-text">{{ question.unit_label_text }}</span>
+                                            {% endif %}
+                                        </div>
+                                    {% endfor %}
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-flex justify-content-end">
+                            <button type="submit" class="btn btn-primary btn-lg" id="submit-btn" disabled>
+                                次へ
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script src="{% static 'js/quiz.js' %}"></script>
+{% endblock %}
+{% endblock %}

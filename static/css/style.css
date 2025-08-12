@@ -1,0 +1,348 @@
+/* メインスタイル */
+body {
+    background-color: #f8f9fa;
+}
+
+.navbar-brand {
+    font-weight: bold;
+}
+
+.card {
+    border-radius: 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+    border-color: #0056b3;
+}
+
+/* クイズ関連のスタイル */
+.timer-display {
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+.countdown-number {
+    font-size: 8rem;
+    font-weight: bold;
+    color: #007bff;
+}
+
+/* 入力フィールドのスタイル */
+input[type="text"] {
+    -webkit-autofill: none;
+    -webkit-box-shadow: 0 0 0 1000px white inset;
+}
+
+input::-webkit-calendar-picker-indicator {
+    display: none;
+}
+
+/* 選択問題のスタイル */
+.choice-options {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.choice-item {
+    padding: 1rem;
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    margin-bottom: 0.5rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    user-select: none;
+}
+
+.choice-item:hover {
+    border-color: #007bff;
+    background-color: #f8f9fa;
+}
+
+.choice-item.selected {
+    border-color: #007bff;
+    background-color: #e3f2fd;
+    box-shadow: 0 2px 4px rgba(0, 123, 255, 0.2);
+}
+
+.choice-content {
+    display: flex;
+    align-items: center;
+}
+
+.choice-number {
+    font-weight: bold;
+    margin-right: 8px;
+    color: #6c757d;
+    min-width: 30px;
+}
+
+.choice-text {
+    flex: 1;
+}
+
+/* プログレスバーのスタイル */
+.progress {
+    height: 10px;
+    border-radius: 5px;
+}
+
+.progress-bar {
+    transition: width 1s linear;
+}
+
+/* スコア表示のスタイル */
+
+/* エラーメッセージ吹き出しのスタイル */
+.error-tooltip {
+    position: absolute;
+    z-index: 1000;
+    pointer-events: none;
+}
+
+.tooltip-content {
+    position: relative;
+    background-color: #dc3545;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    white-space: nowrap;
+}
+
+.tooltip-arrow {
+    position: absolute;
+    bottom: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 6px solid #dc3545;
+}
+
+.tooltip-text {
+    text-align: center;
+}
+.score-display {
+    text-align: center;
+    margin: 2rem 0;
+}
+
+.display-1 {
+    font-size: 4rem;
+    font-weight: bold;
+}
+
+/* テーブルのスタイル */
+.table-responsive {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.table th {
+    background-color: #f8f9fa;
+    border-top: none;
+}
+
+/* アラートのスタイル */
+.alert {
+    border-radius: 10px;
+    border: none;
+}
+
+/* ドロップダウンのスタイル */
+.dropdown-menu {
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* フッターのスタイル */
+footer {
+    margin-top: auto;
+}
+
+/* トップページのスタイル */
+.hero-section {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 4rem 0;
+    border-radius: 0 0 2rem 2rem;
+    margin: -1.5rem -1.5rem 2rem -1.5rem;
+}
+
+.app-preview {
+    background: white;
+    border-radius: 1rem;
+    padding: 1rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.preview-card {
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+.preview-header {
+    background: #f8f9fa;
+    padding: 0.5rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.preview-dot {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 0.5rem;
+}
+
+.preview-content {
+    padding: 1.5rem;
+}
+
+.preview-question h5 {
+    color: #007bff;
+    margin-bottom: 1rem;
+}
+
+.preview-question p {
+    color: #333;
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+}
+
+.preview-choices {
+    margin-top: 1rem;
+}
+
+.preview-choice {
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    border: 2px solid #e9ecef;
+    border-radius: 0.5rem;
+    background: #f8f9fa;
+    transition: all 0.2s ease;
+    color: #333;
+    font-weight: 500;
+}
+
+.preview-choice:hover {
+    border-color: #007bff;
+    background: #e3f2fd;
+}
+
+/* スライドショーのスタイル */
+.preview-content {
+    position: relative;
+    overflow: hidden;
+    min-height: 300px; /* スライドの高さを固定 */
+}
+
+.preview-question {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    opacity: 0;
+    transform: translateX(100%);
+    transition: all 0.6s ease-in-out;
+    pointer-events: none;
+    visibility: hidden;
+}
+
+.preview-question.active {
+    opacity: 1;
+    transform: translateX(0);
+    pointer-events: auto;
+    visibility: visible;
+}
+
+.preview-question.prev {
+    transform: translateX(-100%);
+}
+
+.preview-question.next {
+    transform: translateX(100%);
+}
+
+.slide-indicators {
+    text-align: center;
+}
+
+.indicator {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: #dee2e6;
+    margin: 0 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.indicator.active {
+    background-color: #007bff;
+}
+
+.indicator:hover {
+    background-color: #0056b3;
+}
+
+.feature-card {
+    padding: 2rem 1rem;
+    border-radius: 1rem;
+    background: white;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+}
+
+.feature-icon {
+    color: #007bff;
+}
+
+.get-started-section {
+    background: #f8f9fa;
+    padding: 3rem 0;
+    margin: 2rem -1.5rem -1.5rem -1.5rem;
+    border-radius: 2rem 2rem 0 0;
+}
+
+/* レスポンシブデザイン */
+@media (max-width: 768px) {
+    .countdown-number {
+        font-size: 4rem;
+    }
+    
+    .display-1 {
+        font-size: 2.5rem;
+    }
+    
+    .card {
+        margin-bottom: 1rem;
+    }
+    
+    .hero-section {
+        padding: 2rem 0;
+        margin: -1rem -1rem 1rem -1rem;
+    }
+    
+    .get-started-section {
+        padding: 2rem 0;
+        margin: 1rem -1rem -1rem -1rem;
+    }
+}

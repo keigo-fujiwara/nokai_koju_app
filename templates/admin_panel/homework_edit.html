@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+
+{% block title %}宿題編集 - 能開高受用科目アプリ{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'admin_panel:home' %}">管理画面</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'admin_panel:homework_list' %}">宿題管理</a></li>
+                <li class="breadcrumb-item active">宿題編集</li>
+            </ol>
+        </nav>
+        
+        <h1 class="mb-4">宿題編集</h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">宿題設定</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    {% if form.errors %}
+                        <div class="alert alert-danger">
+                            <ul class="mb-0">
+                                {% for field, errors in form.errors.items %}
+                                    {% for error in errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.unit.id_for_label }}" class="form-label">単元</label>
+                        {{ form.unit }}
+                        {% if form.unit.errors %}
+                            <div class="text-danger">{{ form.unit.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.question_count.id_for_label }}" class="form-label">問題数</label>
+                        {{ form.question_count }}
+                        {% if form.question_count.errors %}
+                            <div class="text-danger">{{ form.question_count.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.publish_scope.id_for_label }}" class="form-label">公開範囲</label>
+                        {{ form.publish_scope }}
+                        {% if form.publish_scope.errors %}
+                            <div class="text-danger">{{ form.publish_scope.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.is_published.id_for_label }}" class="form-label">公開状況</label>
+                        {{ form.is_published }}
+                        {% if form.is_published.errors %}
+                            <div class="text-danger">{{ form.is_published.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'admin_panel:homework_list' %}" class="btn btn-outline-secondary">キャンセル</a>
+                        <button type="submit" class="btn btn-primary">更新</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">宿題情報</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>作成日:</strong> {{ object.created_at|date:"Y-m-d H:i" }}</p>
+                <p><strong>公開日:</strong> {{ object.published_at|date:"Y-m-d H:i"|default:"未公開" }}</p>
+                <p><strong>公開URL:</strong> 
+                    {% if object.is_published %}
+                        <a href="{% url 'quiz_app:homework' object.public_slug %}" target="_blank">
+                            {{ object.public_slug }}
+                        </a>
+                    {% else %}
+                        未公開
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+
+{% block title %}管理画面 - 能開高受用科目アプリ{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">管理画面</h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-3 mb-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title">総問題数</h5>
+                <p class="card-text display-6">{{ total_questions }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title">総単元数</h5>
+                <p class="card-text display-6">{{ total_units }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title">総生徒数</h5>
+                <p class="card-text display-6">{{ total_students|default:"0" }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title">平均正答率</h5>
+                <p class="card-text display-6">{{ average_score|floatformat:1|default:"0" }}%</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">管理機能</h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group list-group-flush">
+                    <a href="{% url 'admin_panel:upload' %}" class="list-group-item list-group-item-action">
+                        <i class="bi bi-upload"></i> XLSMファイルアップロード
+                    </a>
+                    <a href="{% url 'admin_panel:upload_status' %}" class="list-group-item list-group-item-action">
+                        <i class="bi bi-clock-history"></i> アップロード状況
+                    </a>
+                    <a href="{% url 'admin_panel:questions' %}" class="list-group-item list-group-item-action">
+                        <i class="bi bi-list-ul"></i> 問題管理
+                    </a>
+                    <a href="{% url 'admin_panel:analytics' %}" class="list-group-item list-group-item-action">
+                        <i class="bi bi-graph-up"></i> 利用状況分析
+                    </a>
+                    <a href="{% url 'admin_panel:homework_list' %}" class="list-group-item list-group-item-action">
+                        <i class="bi bi-journal-text"></i> 宿題管理
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">最近のアップロード</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_uploads %}
+                    <div class="list-group list-group-flush">
+                        {% for upload in recent_uploads %}
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>{{ upload.get_subject_display }}</strong>
+                                    <br>
+                                    <small class="text-muted">{{ upload.uploaded_at|date:"Y-m-d H:i" }}</small>
+                                </div>
+                                <span class="badge bg-{{ upload.status|yesno:'success,warning' }}">
+                                    {{ upload.get_status_display }}
+                                </span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted">最近のアップロードはありません。</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">システムログ</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_logs %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>日時</th>
+                                    <th>レベル</th>
+                                    <th>メッセージ</th>
+                                    <th>ユーザー</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for log in recent_logs %}
+                                <tr>
+                                    <td>{{ log.created_at|date:"Y-m-d H:i" }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ log.level|yesno:'danger,warning,info' }}">
+                                            {{ log.get_level_display }}
+                                        </span>
+                                    </td>
+                                    <td>{{ log.message|truncatechars:50 }}</td>
+                                    <td>{{ log.user.username|default:"システム" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted">最近のログはありません。</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
