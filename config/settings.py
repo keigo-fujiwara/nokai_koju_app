@@ -83,36 +83,29 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-# 一時的にSQLiteを使用（PostgreSQL接続問題の回避）
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-        'OPTIONS': {
-            'timeout': 20,
+# Database configuration
+if os.getenv('DATABASE_URL'):
+    # Production: PostgreSQL (Render)
+    import dj_database_url
+    db_config = dj_database_url.parse(os.getenv('DATABASE_URL'))
+    # PostgreSQLの文字エンコーディングを設定
+    db_config['OPTIONS'] = {
+        'client_encoding': 'UTF8',
+    }
+    DATABASES = {
+        'default': db_config
+    }
+else:
+    # Development: SQLite
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+            'OPTIONS': {
+                'timeout': 20,
+            }
         }
     }
-}
-
-# TODO: PostgreSQL接続問題が解決されたら以下の設定に戻す
-# if os.getenv('DATABASE_URL'):
-#     import dj_database_url
-#     db_config = dj_database_url.parse(os.getenv('DATABASE_URL'))
-#     # PostgreSQLの文字エンコーディングを設定
-#     db_config['OPTIONS'] = {
-#         'client_encoding': 'UTF8',
-#     }
-#     DATABASES = {
-#         'default': db_config
-#     }
-# else:
-#     # Development database
-#     DATABASES = {
-#         'default': {
-#             'ENGINE': 'django.db.backends.sqlite3',
-#             'NAME': BASE_DIR / 'db.sqlite3',
-#         }
-#     }
 
 
 # Password validation
@@ -156,7 +149,10 @@ STATICFILES_DIRS = [
 ]
 
 # WhiteNoise configuration
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+if not DEBUG:
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+else:
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
 # Media files
 MEDIA_URL = '/media/'
@@ -190,6 +186,8 @@ else:
     EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True').lower() == 'true'
     EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
     EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
+    # メール送信タイムアウト設定（秒）
+    EMAIL_TIMEOUT = 10
 
 # Django REST Framework settings
 REST_FRAMEWORK = {
@@ -209,6 +207,11 @@ if not DEBUG:
     SECURE_HSTS_SECONDS = 31536000
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
+    # Render用の追加セキュリティ設定
+    SECURE_SSL_REDIRECT = True
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
 
 # Form widget settings
 # FORM_RENDERER = 'django.forms.renderers.TemplatesSetting'

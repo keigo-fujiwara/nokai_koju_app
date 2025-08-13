@@ -1,3 +1,4 @@
+import threading
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.decorators import login_required
@@ -16,8 +17,52 @@ from .models import User, StudentProfile, AdminProfile
 from .forms import StudentRegistrationForm, AdminRegistrationForm, ProfileEditForm
 
 
+def send_activation_email_async(user, request):
+    """非同期でメール認証用のメールを送信"""
+    def send_email():
+        try:
+            from django.conf import settings
+            
+            mail_subject = '管理者アカウント認証メール'
+            
+            # 開発環境では直接URLを生成
+            if settings.DEBUG:
+                domain = '127.0.0.1:8000'
+            else:
+                current_site = get_current_site(request)
+                domain = current_site.domain
+            
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            token = default_token_generator.make_token(user)
+            
+            # メール本文のテンプレート
+            message = render_to_string('accounts/activation_email.html', {
+                'user': user,
+                'domain': domain,
+                'uid': uid,
+                'token': token,
+            })
+            
+            # メール送信
+            send_mail(
+                mail_subject,
+                message,
+                'noreply@example.com',  # 送信者
+                [user.email],  # 受信者
+                fail_silently=False,
+            )
+            print(f"DEBUG: メール送信完了 - {user.email}")
+        except Exception as e:
+            print(f"DEBUG: メール送信エラー - {e}")
+    
+    # 非同期でメール送信を実行
+    thread = threading.Thread(target=send_email)
+    thread.daemon = True
+    thread.start()
+
+
 def send_activation_email(user, request):
-    """メール認証用のメールを送信"""
+    """メール認証用のメールを送信（同期版 - 後方互換性のため）"""
     from django.conf import settings
     
     mail_subject = '管理者アカウント認証メール'
@@ -145,8 +190,18 @@ class AdminRegisterView(CreateView):
             
             # メール認証メールを送信
             try:
-                send_activation_email(user, self.request)
-                messages.success(self.request, '管理者アカウントが作成されました。メール確認後にログインできます。')
+                from django.conf import settings
+                
+                if settings.DEBUG:
+                    # 開発環境: 即座に認証してメール送信は非同期で
+                    user.is_active = True
+                    user.save()
+                    send_activation_email_async(user, self.request)
+                    messages.success(self.request, '管理者アカウントが作成されました。開発環境のため即座に認証されました。')
+                else:
+                    # 本番環境: メール認証が必要
+                    send_activation_email_async(user, self.request)
+                    messages.success(self.request, '管理者アカウントが作成されました。メール確認後にログインできます。')
             except Exception as e:
                 # メール送信に失敗した場合、アカウントを削除
                 user.delete()
