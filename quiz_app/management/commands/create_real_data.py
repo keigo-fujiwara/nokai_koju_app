@@ -172,6 +172,8 @@ class Command(BaseCommand):
         
         # 問題データの作成
         total_questions = 0
+        created_questions = 0
+        skipped_questions = 0
         
         for unit in created_units:
             unit_key = f"{unit.grade_year}{unit.category}"
@@ -186,10 +188,18 @@ class Command(BaseCommand):
             
             # 各単元に問題を作成
             for i, q_data in enumerate(questions_data):
+                source_id = f"{unit.subject.code}_{unit.grade_year}_{unit.category}_{i+1:03d}"
+                
+                # 既存の問題をチェック
+                if Question.objects.filter(unit=unit, source_id=source_id).exists():
+                    self.stdout.write(f'⏭️ 問題をスキップ: {unit} - {q_data["text"][:30]}... (既に存在)')
+                    skipped_questions += 1
+                    continue
+                
                 if q_data['type'] == 'text':
                     question = Question.objects.create(
                         unit=unit,
-                        source_id=f"{unit.subject.code}_{unit.grade_year}_{unit.category}_{i+1:03d}",
+                        source_id=source_id,
                         question_type='text',
                         text=q_data['text'],
                         correct_answer=q_data['correct'],
@@ -200,7 +210,7 @@ class Command(BaseCommand):
                 else:  # choice
                     question = Question.objects.create(
                         unit=unit,
-                        source_id=f"{unit.subject.code}_{unit.grade_year}_{unit.category}_{i+1:03d}",
+                        source_id=source_id,
                         question_type='choice',
                         text=q_data['text'],
                         correct_answer=q_data['correct'],
@@ -211,6 +221,7 @@ class Command(BaseCommand):
                     )
                 
                 total_questions += 1
+                created_questions += 1
                 self.stdout.write(f'📝 問題作成: {unit} - {q_data["text"][:30]}...')
         
         # 管理者ユーザーの作成
@@ -274,5 +285,5 @@ class Command(BaseCommand):
         self.stdout.write(f'📊 統計:')
         self.stdout.write(f'  - 教科: {subject_count}件')
         self.stdout.write(f'  - 単元: {unit_count}件')
-        self.stdout.write(f'  - 問題: {question_count}件')
+        self.stdout.write(f'  - 問題: {question_count}件 (新規作成: {created_questions}件, スキップ: {skipped_questions}件)')
         self.stdout.write(f'  - ユーザー: {user_count}件')
