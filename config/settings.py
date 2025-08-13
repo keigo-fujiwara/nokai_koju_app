@@ -86,6 +86,7 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database configuration
 if os.getenv('DATABASE_URL') and not DEBUG:
     # Production: PostgreSQL (Render) - DEBUG=Falseの場合のみ
+    # ローカル環境ではDATABASE_URLを設定しないことでSQLiteを使用
     import dj_database_url
     db_config = dj_database_url.parse(os.getenv('DATABASE_URL'))
     # PostgreSQLの文字エンコーディングを設定
@@ -97,6 +98,7 @@ if os.getenv('DATABASE_URL') and not DEBUG:
     }
 else:
     # Development: SQLite (DEBUG=Trueの場合、またはDATABASE_URLが設定されていない場合)
+    # ローカル環境ではSQLiteを使用し、本番環境のPostgreSQLには影響しない
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',

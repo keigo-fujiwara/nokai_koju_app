@@ -14,9 +14,10 @@ services:
         value: False
       - key: ALLOWED_HOSTS
         value: .onrender.com
+      # 既存のRenderデータベースを使用（ローカル環境のSQLiteは使用しない）
       - key: DATABASE_URL
         fromDatabase:
-          name: nokai-koju-db
+          name: quiz-app-db
           property: connectionString
       - key: EMAIL_HOST_USER
         value: keigo_fujiwara@waotech.jp
@@ -24,11 +25,8 @@ services:
         value: 4869wwjdK
       - key: SITE_ID
         value: 1
+      # Supabase設定（別解データ用）
       - key: SUPABASE_URL
         value: https://rmnhmqjddrewtohbtgsn.supabase.co
       - key: SUPABASE_ANON_KEY
         value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJtbmhtcWpkZHJld3RvaGJ0Z3NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ5NzA4OTUsImV4cCI6MjA3MDU0Njg5NX0.dZAYqcxtYmTL19MbbbGzk068aBWWxLKijKl2EAx4hX8
-
-databases:
-  - name: nokai-koju-db
-    plan: free
