@@ -63,3 +63,5 @@ INFO 2025-08-13 14:20:51,130 autoreload 15960 26464 C:\Users\keigo\OneDrive\デス
 INFO 2025-08-13 14:20:53,390 autoreload 19752 27220 Watching for file changes with StatReloader
 INFO 2025-08-13 14:21:40,877 autoreload 19752 27220 C:\Users\keigo\OneDrive\デスクトップ\開発コード\能開高受用科目アプリ\quiz_app\views.py changed, reloading.
 INFO 2025-08-13 14:21:42,483 autoreload 7732 2960 Watching for file changes with StatReloader
+INFO 2025-08-13 14:22:04,199 autoreload 7732 2960 C:\Users\keigo\OneDrive\デスクトップ\開発コード\能開高受用科目アプリ\quiz_app\views.py changed, reloading.
+INFO 2025-08-13 14:22:05,961 autoreload 29820 24824 Watching for file changes with StatReloader
