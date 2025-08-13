@@ -20,6 +20,10 @@ class Command(BaseCommand):
             supabase_url = os.getenv('SUPABASE_URL')
             supabase_key = os.getenv('SUPABASE_ANON_KEY')
             
+            self.stdout.write(f'🔍 環境変数確認:')
+            self.stdout.write(f'  SUPABASE_URL: {supabase_url[:50] if supabase_url else "未設定"}...')
+            self.stdout.write(f'  SUPABASE_ANON_KEY: {supabase_key[:20] if supabase_key else "未設定"}...')
+            
             if not supabase_url or not supabase_key:
                 self.stdout.write(self.style.ERROR('❌ Supabase環境変数が設定されていません'))
                 self.stdout.write('SUPABASE_URL と SUPABASE_ANON_KEY を設定してください')
@@ -34,53 +38,66 @@ class Command(BaseCommand):
             # 2. Supabaseからデータを取得
             self.stdout.write('📥 Supabaseからデータを取得中...')
             
-            # 教科データの取得
-            subjects_response = requests.get(
-                f"{supabase_url}/rest/v1/quiz_app_subject",
-                headers={
-                    'apikey': supabase_key,
-                    'Authorization': f'Bearer {supabase_key}'
-                }
-            )
+            # ヘッダーの設定
+            headers = {
+                'apikey': supabase_key,
+                'Authorization': f'Bearer {supabase_key}',
+                'Content-Type': 'application/json',
+                'Prefer': 'return=representation'
+            }
             
+            self.stdout.write(f'🔗 接続URL: {supabase_url}/rest/v1/')
+            
+            # 教科データの取得
+            subjects_url = f"{supabase_url}/rest/v1/quiz_app_subject"
+            self.stdout.write(f'📚 教科データ取得URL: {subjects_url}')
+            
+            subjects_response = requests.get(subjects_url, headers=headers)
+            
+            self.stdout.write(f'📊 教科データレスポンス: {subjects_response.status_code}')
             if subjects_response.status_code != 200:
                 self.stdout.write(self.style.ERROR(f'❌ 教科データの取得に失敗: {subjects_response.status_code}'))
+                self.stdout.write(f'レスポンス内容: {subjects_response.text}')
                 return
             
             subjects_data = subjects_response.json()
             self.stdout.write(f'📚 教科データ: {len(subjects_data)}件')
             
             # 単元データの取得
-            units_response = requests.get(
-                f"{supabase_url}/rest/v1/quiz_app_unit",
-                headers={
-                    'apikey': supabase_key,
-                    'Authorization': f'Bearer {supabase_key}'
-                }
-            )
+            units_url = f"{supabase_url}/rest/v1/quiz_app_unit"
+            self.stdout.write(f'📖 単元データ取得URL: {units_url}')
             
+            units_response = requests.get(units_url, headers=headers)
+            
+            self.stdout.write(f'📊 単元データレスポンス: {units_response.status_code}')
             if units_response.status_code != 200:
                 self.stdout.write(self.style.ERROR(f'❌ 単元データの取得に失敗: {units_response.status_code}'))
+                self.stdout.write(f'レスポンス内容: {units_response.text}')
                 return
             
             units_data = units_response.json()
             self.stdout.write(f'📖 単元データ: {len(units_data)}件')
             
             # 問題データの取得
-            questions_response = requests.get(
-                f"{supabase_url}/rest/v1/quiz_app_question",
-                headers={
-                    'apikey': supabase_key,
-                    'Authorization': f'Bearer {supabase_key}'
-                }
-            )
+            questions_url = f"{supabase_url}/rest/v1/quiz_app_question"
+            self.stdout.write(f'❓ 問題データ取得URL: {questions_url}')
             
+            questions_response = requests.get(questions_url, headers=headers)
+            
+            self.stdout.write(f'📊 問題データレスポンス: {questions_response.status_code}')
             if questions_response.status_code != 200:
                 self.stdout.write(self.style.ERROR(f'❌ 問題データの取得に失敗: {questions_response.status_code}'))
+                self.stdout.write(f'レスポンス内容: {questions_response.text}')
                 return
             
             questions_data = questions_response.json()
             self.stdout.write(f'❓ 問題データ: {len(questions_data)}件')
+            
+            # データが0件の場合は終了
+            if len(subjects_data) == 0 and len(units_data) == 0 and len(questions_data) == 0:
+                self.stdout.write(self.style.WARNING('⚠️ すべてのデータが0件です'))
+                self.stdout.write('Supabaseの設定またはデータの存在を確認してください')
+                return
             
             # 3. データをRenderのPostgreSQLに移行
             self.stdout.write('📤 RenderのPostgreSQLにデータを移行中...')
