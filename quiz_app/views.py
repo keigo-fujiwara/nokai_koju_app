@@ -121,18 +121,29 @@ class QuizQuestionView(LoginRequiredMixin, TemplateView):
         # 選択問題の場合、選択肢をランダムに並べ替え
         if question.question_type == 'choice' and question.choices:
             import random
-            # 選択肢のコピーを作成してランダムに並べ替え
-            shuffled_choices = question.choices.copy()
-            random.shuffle(shuffled_choices)
-            question.shuffled_choices = shuffled_choices
+            # 選択肢をリストとして取得（JSONFieldの場合の対応）
+            if isinstance(question.choices, str):
+                import json
+                try:
+                    choices_list = json.loads(question.choices)
+                except json.JSONDecodeError:
+                    choices_list = []
+            else:
+                choices_list = list(question.choices) if question.choices else []
             
-            # 選択肢の並べ替え情報をセッションに保存
-            if not session.choice_mappings:
-                session.choice_mappings = {}
-            
-            # 問題IDごとに選択肢の並べ替え情報を保存
-            session.choice_mappings[str(question.id)] = shuffled_choices
-            session.save()
+            if choices_list:
+                # 選択肢のコピーを作成してランダムに並べ替え
+                shuffled_choices = choices_list.copy()
+                random.shuffle(shuffled_choices)
+                question.shuffled_choices = shuffled_choices
+                
+                # 選択肢の並べ替え情報をセッションに保存
+                if not session.choice_mappings:
+                    session.choice_mappings = {}
+                
+                # 問題IDごとに選択肢の並べ替え情報を保存
+                session.choice_mappings[str(question.id)] = shuffled_choices
+                session.save()
         
         context['question'] = question
         context['question_number'] = question_number
@@ -209,8 +220,18 @@ class QuizResultView(LoginRequiredMixin, DetailView):
                             attempt.selected_choice_text = attempt.answer_text
                     else:
                         # 選択肢の並べ替え情報がない場合は元の選択肢配列を使用
-                        if 0 <= choice_index < len(attempt.question.choices):
-                            attempt.selected_choice_text = attempt.question.choices[choice_index]
+                        # 選択肢をリストとして取得（JSONFieldの場合の対応）
+                        if isinstance(attempt.question.choices, str):
+                            import json
+                            try:
+                                choices_list = json.loads(attempt.question.choices)
+                            except json.JSONDecodeError:
+                                choices_list = []
+                        else:
+                            choices_list = list(attempt.question.choices) if attempt.question.choices else []
+                        
+                        if 0 <= choice_index < len(choices_list):
+                            attempt.selected_choice_text = choices_list[choice_index]
                         else:
                             attempt.selected_choice_text = attempt.answer_text
                 except ValueError:
