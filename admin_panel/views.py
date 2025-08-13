@@ -31,10 +31,22 @@ class AdminHomeView(LoginRequiredMixin, AdminRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         
         # 統計情報
+        from accounts.models import StudentProfile
+        from quiz_app.models import QuizAttempt
+        
         context['total_questions'] = Question.objects.count()
         context['total_units'] = Unit.objects.count()
+        context['total_students'] = StudentProfile.objects.count()
         context['recent_uploads'] = XLSMUpload.objects.order_by('-uploaded_at')[:5]
         context['recent_logs'] = SystemLog.objects.order_by('-created_at')[:5]
+        
+        # 平均正答率の計算
+        total_attempts = QuizAttempt.objects.count()
+        if total_attempts > 0:
+            correct_attempts = QuizAttempt.objects.filter(is_correct=True).count()
+            context['average_score'] = (correct_attempts / total_attempts) * 100
+        else:
+            context['average_score'] = 0
         
         return context
 

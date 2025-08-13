@@ -162,7 +162,10 @@ def sync_alternatives_to_supabase(subject_code: str) -> Dict[str, Any]:
         supabase_key = os.getenv('SUPABASE_ANON_KEY')
         
         if not supabase_url or not supabase_key:
+            print("❌ Supabase環境変数が設定されていません")
             return {'success': False, 'error': 'Supabase環境変数が設定されていません'}
+        
+        print(f"🔄 Supabase同期開始 - URL: {supabase_url}")
         
         # ヘッダーの設定
         headers = {
@@ -176,36 +179,66 @@ def sync_alternatives_to_supabase(subject_code: str) -> Dict[str, Any]:
         subject = Subject.objects.get(code=subject_code)
         questions = Question.objects.filter(unit__subject=subject)
         
+        print(f"📊 同期対象問題数: {questions.count()}件")
+        
         updated_count = 0
         failed_count = 0
+        errors = []
         
         for question in questions:
             try:
                 # PATCHリクエストで問題を更新
                 update_url = f"{supabase_url}/rest/v1/quiz_app_question?id=eq.{question.id}"
                 
+                # 別解データの準備
+                alternatives = question.accepted_alternatives or []
+                if isinstance(alternatives, str):
+                    try:
+                        alternatives = json.loads(alternatives)
+                    except json.JSONDecodeError:
+                        alternatives = []
+                
                 update_data = {
-                    'accepted_alternatives': question.accepted_alternatives or []
+                    'accepted_alternatives': alternatives
                 }
+                
+                print(f"🔄 問題ID {question.id} を更新中... 別解: {alternatives}")
                 
                 response = requests.patch(update_url, headers=headers, json=update_data)
                 
                 if response.status_code == 200:
                     updated_count += 1
+                    print(f"✅ 問題ID {question.id} 更新成功")
                 else:
                     failed_count += 1
+                    error_msg = f"問題ID {question.id} 更新失敗 ({response.status_code}): {response.text}"
+                    errors.append(error_msg)
+                    print(f"❌ {error_msg}")
                     
             except Exception as e:
                 failed_count += 1
+                error_msg = f"問題ID {question.id} の更新エラー: {str(e)}"
+                errors.append(error_msg)
+                print(f"❌ {error_msg}")
+        
+        print(f"🎉 Supabase同期完了: {updated_count}件成功, {failed_count}件失敗")
+        
+        if errors:
+            print("⚠️ エラー詳細:")
+            for error in errors[:5]:  # 最初の5件のみ表示
+                print(f"  - {error}")
         
         return {
             'success': True,
             'updated_count': updated_count,
-            'failed_count': failed_count
+            'failed_count': failed_count,
+            'errors': errors
         }
         
     except Exception as e:
-        return {'success': False, 'error': str(e)}
+        error_msg = f"Supabase同期エラー: {str(e)}"
+        print(f"❌ {error_msg}")
+        return {'success': False, 'error': error_msg}
 
 
 def process_xlsm_file(file_path: str, subject_code: str) -> Dict[str, Any]:
