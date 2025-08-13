@@ -113,9 +113,9 @@ def extract_unit_info(unit_text: str) -> Tuple[Optional[str], Optional[str]]:
 
 def check_answer(user_answer: str, question: Question) -> bool:
     """解答をチェックする"""
-    # 正解との比較（大文字小文字、空白を無視）
-    user_answer_clean = user_answer.strip().lower()
-    correct_answer_clean = question.correct_answer.strip().lower()
+    # 正解との比較（大文字小文字、空白を無視、全角数値を半角に変換）
+    user_answer_clean = normalize_alphanumeric(user_answer.strip().lower())
+    correct_answer_clean = normalize_alphanumeric(question.correct_answer.strip().lower())
     
     # 完全一致の場合
     if user_answer_clean == correct_answer_clean:
@@ -134,14 +134,14 @@ def check_answer(user_answer: str, question: Question) -> bool:
         
         for alternative in alternatives:
             if isinstance(alternative, str):
-                alternative_clean = alternative.strip().lower()
+                alternative_clean = normalize_alphanumeric(alternative.strip().lower())
                 if user_answer_clean == alternative_clean:
                     return True
     
     # 複数解答欄の場合（・で区切られている）
     if '・' in correct_answer_clean:
-        correct_parts = [part.strip() for part in correct_answer_clean.split('・')]
-        user_parts = [part.strip() for part in user_answer_clean.split('・')]
+        correct_parts = [normalize_alphanumeric(part.strip()) for part in correct_answer_clean.split('・')]
+        user_parts = [normalize_alphanumeric(part.strip()) for part in user_answer_clean.split('・')]
         
         if len(correct_parts) == len(user_parts):
             # 順序を無視して比較
@@ -157,17 +157,22 @@ def check_answer(user_answer: str, question: Question) -> bool:
 def sync_alternatives_to_supabase(subject_code: str) -> Dict[str, Any]:
     """Supabaseの別解データを同期更新"""
     try:
-        # 環境変数を取得
         supabase_url = os.getenv('SUPABASE_URL')
         supabase_key = os.getenv('SUPABASE_ANON_KEY')
         
+        # 本番環境でのみSupabase同期を実行
         if not supabase_url or not supabase_key:
-            print("❌ Supabase環境変数が設定されていません")
-            return {'success': False, 'error': 'Supabase環境変数が設定されていません'}
+            print("⚠️ Supabase環境変数が設定されていないため、同期をスキップします")
+            return {
+                'success': True,
+                'updated_count': 0,
+                'failed_count': 0,
+                'errors': [],
+                'skipped': True
+            }
         
         print(f"🔄 Supabase同期開始 - URL: {supabase_url}")
         
-        # ヘッダーの設定
         headers = {
             'apikey': supabase_key,
             'Authorization': f'Bearer {supabase_key}',
@@ -175,10 +180,8 @@ def sync_alternatives_to_supabase(subject_code: str) -> Dict[str, Any]:
             'Prefer': 'return=representation'
         }
         
-        # 対象教科の問題を取得
         subject = Subject.objects.get(code=subject_code)
         questions = Question.objects.filter(unit__subject=subject)
-        
         print(f"📊 同期対象問題数: {questions.count()}件")
         
         updated_count = 0
@@ -187,16 +190,19 @@ def sync_alternatives_to_supabase(subject_code: str) -> Dict[str, Any]:
         
         for question in questions:
             try:
-                # PATCHリクエストで問題を更新
                 update_url = f"{supabase_url}/rest/v1/quiz_app_question?id=eq.{question.id}"
-                
-                # 別解データの準備
                 alternatives = question.accepted_alternatives or []
+                
+                # JSONFieldの文字列変換対応
                 if isinstance(alternatives, str):
                     try:
                         alternatives = json.loads(alternatives)
                     except json.JSONDecodeError:
                         alternatives = []
+                
+                # リストでない場合は空リストに
+                if not isinstance(alternatives, list):
+                    alternatives = []
                 
                 update_data = {
                     'accepted_alternatives': alternatives
@@ -204,7 +210,7 @@ def sync_alternatives_to_supabase(subject_code: str) -> Dict[str, Any]:
                 
                 print(f"🔄 問題ID {question.id} を更新中... 別解: {alternatives}")
                 
-                response = requests.patch(update_url, headers=headers, json=update_data)
+                response = requests.patch(update_url, headers=headers, json=update_data, timeout=30)
                 
                 if response.status_code == 200:
                     updated_count += 1
@@ -215,6 +221,16 @@ def sync_alternatives_to_supabase(subject_code: str) -> Dict[str, Any]:
                     errors.append(error_msg)
                     print(f"❌ {error_msg}")
                     
+            except requests.exceptions.Timeout:
+                failed_count += 1
+                error_msg = f"問題ID {question.id} の更新タイムアウト"
+                errors.append(error_msg)
+                print(f"❌ {error_msg}")
+            except requests.exceptions.RequestException as e:
+                failed_count += 1
+                error_msg = f"問題ID {question.id} のネットワークエラー: {str(e)}"
+                errors.append(error_msg)
+                print(f"❌ {error_msg}")
             except Exception as e:
                 failed_count += 1
                 error_msg = f"問題ID {question.id} の更新エラー: {str(e)}"
@@ -418,9 +434,13 @@ def save_questions_from_xlsm_data(data: List[Dict[str, Any]], subject_code: str)
     print(f"🔄 Supabaseとの別解データ同期中...")
     sync_result = sync_alternatives_to_supabase(subject_code)
     if sync_result['success']:
-        print(f"✅ Supabase同期完了: {sync_result['updated_count']}件更新, {sync_result['failed_count']}件失敗")
+        if sync_result.get('skipped'):
+            print(f"⚠️ Supabase同期をスキップしました（ローカル環境）")
+        else:
+            print(f"✅ Supabase同期完了: {sync_result['updated_count']}件更新, {sync_result['failed_count']}件失敗")
     else:
         print(f"⚠️ Supabase同期エラー: {sync_result['error']}")
+        print(f"⚠️ ただし、ローカルデータベースへの保存は完了しています")
     
     return {
         'saved_count': saved_count,
