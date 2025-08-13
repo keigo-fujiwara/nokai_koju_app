@@ -10,9 +10,8 @@ import django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 django.setup()
 
-from django.contrib.auth.models import User
+from accounts.models import User, StudentProfile, AdminProfile
 from quiz_app.models import Subject, Unit, Question
-from accounts.models import StudentProfile, AdminProfile
 
 def check_database():
     """データベースの状況を確認"""
@@ -47,17 +46,21 @@ def check_database():
         if subject_count > 0:
             subjects = Subject.objects.all()
             for subject in subjects:
-                print(f"  📚 {subject.name}")
+                print(f"  📚 {subject.label_ja}")
                 units = subject.units.all()
                 for unit in units:
-                    print(f"    📖 {unit.name} (問題数: {unit.questions.count()})")
+                    print(f"    📖 {unit} (問題数: {unit.questions.count()})")
         
         # データベース接続確認
         from django.db import connection
-        with connection.cursor() as cursor:
-            cursor.execute("SELECT version();")
-            db_version = cursor.fetchone()
-            print(f"🗄️ データベース: {db_version[0]}")
+        db_engine = connection.settings_dict['ENGINE']
+        if 'postgresql' in db_engine:
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT version();")
+                db_version = cursor.fetchone()
+                print(f"🗄️ データベース: PostgreSQL {db_version[0]}")
+        else:
+            print(f"🗄️ データベース: SQLite")
             
     except Exception as e:
         print(f"❌ エラーが発生しました: {e}")

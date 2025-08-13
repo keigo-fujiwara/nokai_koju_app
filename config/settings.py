@@ -84,7 +84,7 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 # Database configuration
-if os.getenv('DATABASE_URL'):
+if os.getenv('DATABASE_URL') and not DEBUG:
     # Production: PostgreSQL (Render)
     import dj_database_url
     db_config = dj_database_url.parse(os.getenv('DATABASE_URL'))
