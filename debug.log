@@ -1,1 +1,65 @@
- 
+ INFO 2025-08-13 14:18:32,168 autoreload 18596 30644 Watching for file changes with StatReloader
+INFO 2025-08-13 14:19:10,135 autoreload 18596 30644 C:\Users\keigo\OneDrive\デスクトップ\開発コード\能開高受用科目アプリ\quiz_app\views.py changed, reloading.
+INFO 2025-08-13 14:19:13,164 autoreload 20232 20744 Watching for file changes with StatReloader
+INFO 2025-08-13 14:19:23,725 basehttp 20232 23880 "GET / HTTP/1.1" 200 6043
+INFO 2025-08-13 14:19:23,806 basehttp 20232 33388 "GET /static/js/main.js HTTP/1.1" 304 0
+INFO 2025-08-13 14:19:23,806 basehttp 20232 23880 "GET /static/css/style.css HTTP/1.1" 304 0
+INFO 2025-08-13 14:19:25,076 basehttp 20232 33388 "GET /quiz/subject/1/ HTTP/1.1" 200 13218
+INFO 2025-08-13 14:19:26,053 basehttp 20232 33388 "GET /quiz/unit/21/ HTTP/1.1" 200 6865
+INFO 2025-08-13 14:19:26,945 basehttp 20232 33388 "GET /quiz/quiz/start/21/10/ HTTP/1.1" 200 7565
+INFO 2025-08-13 14:19:27,009 basehttp 20232 33388 "GET /static/js/quiz.js HTTP/1.1" 304 0
+INFO 2025-08-13 14:19:30,996 views 20232 33388 新しい問題を選択: 問題番号=1, 問題ID=719, 問題文=砂糖のように、加熱すると黒くこげて炭になったり、二酸化炭素と水を発生させたりする物質を何というか。...
+INFO 2025-08-13 14:19:31,022 views 20232 23880 新しい問題を選択: 問題番号=1, 問題ID=740, 問題文=液体を沸騰させて気体にし、それを冷やして再び液体にして集める方法を何というか。...
+INFO 2025-08-13 14:19:31,053 basehttp 20232 33388 - Broken pipe from ('127.0.0.1', 60020)
+INFO 2025-08-13 14:19:31,057 basehttp 20232 23880 "GET /quiz/quiz/question/52/1/ HTTP/1.1" 200 7111
+INFO 2025-08-13 14:19:35,805 views 20232 23880 submit_answer: 開始 - session_id=52, question_number=1
+INFO 2025-08-13 14:19:35,808 views 20232 23880 submit_answer: POSTリクエスト処理開始
+INFO 2025-08-13 14:19:35,824 views 20232 23880 submit_answer: セッション取得成功 - session_id=52
+INFO 2025-08-13 14:19:35,841 views 20232 23880 submit_answer: 保存された問題IDを使用: 問題番号=1, 問題ID=740, 問題文=液体を沸騰させて気体にし、それを冷やして再び液体にして集める方法を何というか。...
+INFO 2025-08-13 14:19:35,884 basehttp 20232 23880 "POST /quiz/quiz/submit/52/1/ HTTP/1.1" 302 0
+INFO 2025-08-13 14:19:35,974 views 20232 23880 新しい問題を選択: 問題番号=2, 問題ID=732, 問題文=水に溶けやすく、密度が空気よりも小さい気体に適する集め方は何か。...
+INFO 2025-08-13 14:19:35,991 basehttp 20232 23880 "GET /quiz/quiz/question/52/2/ HTTP/1.1" 200 7090
+INFO 2025-08-13 14:19:42,067 autoreload 20232 20744 C:\Users\keigo\OneDrive\デスクトップ\開発コード\能開高受用科目アプリ\quiz_app\views.py changed, reloading.
+INFO 2025-08-13 14:19:44,595 autoreload 32964 30896 Watching for file changes with StatReloader
+INFO 2025-08-13 14:20:10,410 basehttp 32964 26032 "GET / HTTP/1.1" 200 6043
+INFO 2025-08-13 14:20:13,731 basehttp 32964 26032 "GET /admin/ HTTP/1.1" 200 19879
+INFO 2025-08-13 14:20:13,785 basehttp 32964 26032 "GET /static/admin/css/base.css HTTP/1.1" 304 0
+INFO 2025-08-13 14:20:13,793 basehttp 32964 25736 "GET /static/admin/css/nav_sidebar.css HTTP/1.1" 304 0
+INFO 2025-08-13 14:20:13,793 basehttp 32964 20220 "GET /static/admin/css/dark_mode.css HTTP/1.1" 304 0
+INFO 2025-08-13 14:20:13,793 basehttp 32964 16624 "GET /static/admin/css/responsive.css HTTP/1.1" 304 0
+INFO 2025-08-13 14:20:13,799 basehttp 32964 4004 "GET /static/admin/css/dashboard.css HTTP/1.1" 304 0
+INFO 2025-08-13 14:20:13,801 basehttp 32964 26452 "GET /static/admin/js/theme.js HTTP/1.1" 304 0
+INFO 2025-08-13 14:20:13,813 basehttp 32964 26452 "GET /static/admin/js/nav_sidebar.js HTTP/1.1" 304 0
+INFO 2025-08-13 14:20:13,830 basehttp 32964 26452 "GET /static/admin/img/icon-addlink.svg HTTP/1.1" 304 0
+INFO 2025-08-13 14:20:13,830 basehttp 32964 16624 "GET /static/admin/img/icon-deletelink.svg HTTP/1.1" 304 0
+INFO 2025-08-13 14:20:13,830 basehttp 32964 4004 "GET /static/admin/img/icon-changelink.svg HTTP/1.1" 304 0
+INFO 2025-08-13 14:20:19,330 basehttp 32964 4004 "GET /admin/quiz_app/question/ HTTP/1.1" 200 91490
+INFO 2025-08-13 14:20:19,404 basehttp 32964 26032 "GET /static/admin/js/core.js HTTP/1.1" 304 0
+INFO 2025-08-13 14:20:19,406 basehttp 32964 4004 "GET /static/admin/css/changelists.css HTTP/1.1" 304 0
+INFO 2025-08-13 14:20:19,414 basehttp 32964 20220 "GET /static/admin/js/jquery.init.js HTTP/1.1" 304 0
+INFO 2025-08-13 14:20:19,420 basehttp 32964 25736 "GET /static/admin/js/vendor/jquery/jquery.js HTTP/1.1" 304 0
+INFO 2025-08-13 14:20:19,431 basehttp 32964 26032 "GET /static/admin/js/urlify.js HTTP/1.1" 304 0
+INFO 2025-08-13 14:20:19,431 basehttp 32964 26452 "GET /static/admin/js/actions.js HTTP/1.1" 304 0
+INFO 2025-08-13 14:20:19,452 basehttp 32964 4004 "GET /static/admin/js/admin/RelatedObjectLookups.js HTTP/1.1" 304 0
+INFO 2025-08-13 14:20:19,458 basehttp 32964 20220 "GET /static/admin/js/vendor/xregexp/xregexp.js HTTP/1.1" 304 0
+INFO 2025-08-13 14:20:19,465 basehttp 32964 25736 "GET /static/admin/js/prepopulate.js HTTP/1.1" 304 0
+INFO 2025-08-13 14:20:19,476 basehttp 32964 26452 "GET /static/admin/img/icon-no.svg HTTP/1.1" 304 0
+INFO 2025-08-13 14:20:19,476 basehttp 32964 26032 "GET /static/admin/img/search.svg HTTP/1.1" 304 0
+INFO 2025-08-13 14:20:19,501 basehttp 32964 26032 "GET /static/admin/js/filters.js HTTP/1.1" 304 0
+INFO 2025-08-13 14:20:19,521 basehttp 32964 26032 "GET /static/admin/img/icon-yes.svg HTTP/1.1" 304 0
+INFO 2025-08-13 14:20:19,562 basehttp 32964 16624 "GET /admin/jsi18n/ HTTP/1.1" 200 9574
+INFO 2025-08-13 14:20:19,611 basehttp 32964 16624 "GET /static/admin/img/tooltag-add.svg HTTP/1.1" 304 0
+INFO 2025-08-13 14:20:19,611 basehttp 32964 26032 "GET /static/admin/img/sorting-icons.svg HTTP/1.1" 304 0
+INFO 2025-08-13 14:20:19,635 basehttp 32964 26032 "GET /static/admin/img/icon-viewlink.svg HTTP/1.1" 304 0
+INFO 2025-08-13 14:20:23,780 autoreload 32964 30896 C:\Users\keigo\OneDrive\デスクトップ\開発コード\能開高受用科目アプリ\quiz_app\views.py changed, reloading.
+INFO 2025-08-13 14:20:26,730 autoreload 15960 26464 Watching for file changes with StatReloader
+INFO 2025-08-13 14:20:28,911 basehttp 15960 21112 "GET /admin/quiz_app/question/722/change/ HTTP/1.1" 200 25255
+INFO 2025-08-13 14:20:28,944 basehttp 15960 21112 "GET /static/admin/css/forms.css HTTP/1.1" 304 0
+INFO 2025-08-13 14:20:28,961 basehttp 15960 20952 "GET /static/admin/js/prepopulate_init.js HTTP/1.1" 304 0
+INFO 2025-08-13 14:20:28,961 basehttp 15960 25620 "GET /static/admin/css/widgets.css HTTP/1.1" 304 0
+INFO 2025-08-13 14:20:28,973 basehttp 15960 21112 "GET /admin/jsi18n/ HTTP/1.1" 200 9574
+INFO 2025-08-13 14:20:28,977 basehttp 15960 25620 "GET /static/admin/js/change_form.js HTTP/1.1" 304 0
+INFO 2025-08-13 14:20:51,130 autoreload 15960 26464 C:\Users\keigo\OneDrive\デスクトップ\開発コード\能開高受用科目アプリ\quiz_app\views.py changed, reloading.
+INFO 2025-08-13 14:20:53,390 autoreload 19752 27220 Watching for file changes with StatReloader
+INFO 2025-08-13 14:21:40,877 autoreload 19752 27220 C:\Users\keigo\OneDrive\デスクトップ\開発コード\能開高受用科目アプリ\quiz_app\views.py changed, reloading.
+INFO 2025-08-13 14:21:42,483 autoreload 7732 2960 Watching for file changes with StatReloader

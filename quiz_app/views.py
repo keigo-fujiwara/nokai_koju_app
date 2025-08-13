@@ -444,9 +444,14 @@ class SubmitAnswerView(LoginRequiredMixin, TemplateView):
 @login_required
 def submit_answer(request, session_id, question_number):
     """解答提出処理"""
+    logger.info(f"submit_answer: 開始 - session_id={session_id}, question_number={question_number}")
+    
     try:
         if request.method == 'POST':
+            logger.info(f"submit_answer: POSTリクエスト処理開始")
+            
             session = get_object_or_404(QuizSession, id=session_id, user=request.user)
+            logger.info(f"submit_answer: セッション取得成功 - session_id={session_id}")
             
             # 問題を取得（保存された問題IDを使用）
             if session.question_ids and str(question_number) in session.question_ids:
@@ -459,24 +464,31 @@ def submit_answer(request, session_id, question_number):
                 return redirect('quiz_app:home')
             
             # 解答を取得（複数解答欄対応）
+            logger.info(f"submit_answer: 解答取得開始 - parts_count={question.parts_count}, question_type={question.question_type}")
+            
             if question.parts_count == 1:
                 answer_text = request.POST.get('answer_1', '')
+                logger.info(f"submit_answer: 単一解答欄 - answer_text='{answer_text}'")
                 
                 # 選択問題の場合、選択肢の内容を取得
                 if question.question_type == 'choice':
                     try:
                         choice_index = int(answer_text) - 1
+                        logger.info(f"submit_answer: 選択問題 - choice_index={choice_index}")
                         
                         # セッションに保存された選択肢の並べ替え情報を使用
                         if session.choice_mappings and str(question.id) in session.choice_mappings:
                             shuffled_choices = session.choice_mappings[str(question.id)]
                             if 0 <= choice_index < len(shuffled_choices):
                                 answer_text = shuffled_choices[choice_index]
+                                logger.info(f"submit_answer: 選択肢取得 - answer_text='{answer_text}'")
                         elif hasattr(question, 'shuffled_choices'):
                             # フォールバック: 問題オブジェクトの並べ替え情報を使用
                             if 0 <= choice_index < len(question.shuffled_choices):
                                 answer_text = question.shuffled_choices[choice_index]
+                                logger.info(f"submit_answer: フォールバック選択肢取得 - answer_text='{answer_text}'")
                     except ValueError:
+                        logger.info(f"submit_answer: 選択肢インデックス変換エラー - answer_text='{answer_text}'")
                         pass  # 数字でない場合はそのまま使用
             else:
                 answers = []
@@ -485,9 +497,12 @@ def submit_answer(request, session_id, question_number):
                     answers.append(answer)
                 
                 answer_text = '・'.join(answers)
+                logger.info(f"submit_answer: 複数解答欄 - answers={answers}, answer_text='{answer_text}'")
             
             # 採点
+            logger.info(f"submit_answer: 採点開始 - answer_text='{answer_text}', correct_answer='{question.correct_answer}'")
             is_correct = check_answer(answer_text, question)
+            logger.info(f"submit_answer: 採点結果 - is_correct={is_correct}")
             
             # 実際の解答時間を取得
             time_spent = request.POST.get('time_spent', 20)
@@ -495,8 +510,10 @@ def submit_answer(request, session_id, question_number):
                 time_spent = int(time_spent)
             except ValueError:
                 time_spent = 20
+            logger.info(f"submit_answer: 解答時間 - time_spent={time_spent}")
             
             # 解答記録を保存
+            logger.info(f"submit_answer: 解答記録保存開始")
             QuizAttempt.objects.create(
                 session=session,
                 question=question,
@@ -504,17 +521,24 @@ def submit_answer(request, session_id, question_number):
                 is_correct=is_correct,
                 time_spent_sec=time_spent
             )
+            logger.info(f"submit_answer: 解答記録保存完了")
             
             # 次の問題または結果ページへ
+            logger.info(f"submit_answer: リダイレクト処理開始 - question_number={question_number}, session.question_count={session.question_count}")
+            
             if question_number < session.question_count:
+                logger.info(f"submit_answer: 次の問題へリダイレクト - question_number={question_number + 1}")
                 return redirect('quiz_app:quiz_question', session_id=session_id, question_number=question_number + 1)
             else:
                 # クイズ終了処理
+                logger.info(f"submit_answer: クイズ終了処理開始")
                 session.finished_at = timezone.now()
                 session.total_score = (session.attempts.filter(is_correct=True).count() / session.question_count) * 100
                 session.save()
+                logger.info(f"submit_answer: クイズ終了処理完了 - total_score={session.total_score}")
                 return redirect('quiz_app:quiz_result', pk=session_id)
         
+        logger.info(f"submit_answer: GETリクエスト - ホームへリダイレクト")
         return redirect('quiz_app:home')
         
     except Exception as e:
