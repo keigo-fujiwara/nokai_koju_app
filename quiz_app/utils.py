@@ -1,10 +1,17 @@
 import re
 import json
 import unicodedata
-from typing import List, Dict, Any, Tuple
+from typing import List, Dict, Any, Tuple, Optional
 from openpyxl import load_workbook
 from django.db import transaction
+from django.conf import settings
 from .models import Subject, Unit, Question
+import os
+import requests
+from dotenv import load_dotenv
+
+# .envファイルを読み込み
+load_dotenv()
 
 
 def normalize_alphanumeric(text: str) -> str:
@@ -95,65 +102,110 @@ def parse_alternatives(alternatives_text: str) -> List[str]:
     return [normalize_text(alt.strip()) for alt in alternatives if alt.strip()]
 
 
-def extract_unit_info(unit_text: str) -> Tuple[str, str]:
+def extract_unit_info(unit_text: str) -> Tuple[Optional[str], Optional[str]]:
     """単元テキストから学年とカテゴリを抽出"""
-    # 例: "中1化学" -> ("中1", "化学")
-    # 全角数字も対応
-    grade_match = re.search(r'(中[1-3１２３])', unit_text)
-    if grade_match:
-        grade = grade_match.group(1)
-        # 全角数字を半角に変換
-        grade = grade.replace('１', '1').replace('２', '2').replace('３', '3')
-    else:
-        grade = ""
-    
-    # 学年部分を除いた残りがカテゴリ
-    category = unit_text.replace(grade_match.group(1) if grade_match else "", "").strip()
-    
-    return grade, category
+    # 例: "中1 化学" → ("中1", "化学")
+    match = re.match(r'([中高][1-3])\s*(.+)', unit_text)
+    if match:
+        return match.group(1), match.group(2)
+    return None, None
 
 
 def check_answer(user_answer: str, question: Question) -> bool:
-    """採点ロジック"""
-    user_answer = normalize_text(user_answer)
-    correct_answer = normalize_text(question.correct_answer)
+    """解答をチェックする"""
+    # 正解との比較（大文字小文字、空白を無視）
+    user_answer_clean = user_answer.strip().lower()
+    correct_answer_clean = question.correct_answer.strip().lower()
     
-    # 選択問題の場合
-    if question.question_type == 'choice':
-        # 選択肢のインデックスまたは選択肢のテキストで判定
-        try:
-            # 数字の場合は選択肢のインデックスとして扱う
-            choice_index = int(user_answer) - 1  # 1ベースから0ベースに変換
-            if 0 <= choice_index < len(question.choices):
-                selected_choice = normalize_text(question.choices[choice_index])
-                return selected_choice == correct_answer
-        except ValueError:
-            # 数字でない場合は直接テキスト比較
-            pass
-    
-    # 基本的な一致チェック
-    if user_answer == correct_answer:
+    # 完全一致の場合
+    if user_answer_clean == correct_answer_clean:
         return True
     
-    # 別解チェック
-    for alternative in question.accepted_alternatives:
-        if normalize_text(alternative) == user_answer:
-            return True
-    
-    # 複数解答欄の場合
-    if question.parts_count > 1:
-        user_parts = split_parts(user_answer)
-        correct_parts = split_parts(correct_answer)
+    # 別解との比較
+    if question.accepted_alternatives:
+        # JSONFieldの場合の対応
+        if isinstance(question.accepted_alternatives, str):
+            try:
+                alternatives = json.loads(question.accepted_alternatives)
+            except json.JSONDecodeError:
+                alternatives = []
+        else:
+            alternatives = question.accepted_alternatives
         
-        if len(user_parts) == len(correct_parts):
-            # 順不同でチェック
-            user_parts_set = set(user_parts)
-            correct_parts_set = set(correct_parts)
+        for alternative in alternatives:
+            if isinstance(alternative, str):
+                alternative_clean = alternative.strip().lower()
+                if user_answer_clean == alternative_clean:
+                    return True
+    
+    # 複数解答欄の場合（・で区切られている）
+    if '・' in correct_answer_clean:
+        correct_parts = [part.strip() for part in correct_answer_clean.split('・')]
+        user_parts = [part.strip() for part in user_answer_clean.split('・')]
+        
+        if len(correct_parts) == len(user_parts):
+            # 順序を無視して比較
+            correct_parts_sorted = sorted(correct_parts)
+            user_parts_sorted = sorted(user_parts)
             
-            if user_parts_set == correct_parts_set:
+            if correct_parts_sorted == user_parts_sorted:
                 return True
     
     return False
+
+
+def sync_alternatives_to_supabase(subject_code: str) -> Dict[str, Any]:
+    """Supabaseの別解データを同期更新"""
+    try:
+        # 環境変数を取得
+        supabase_url = os.getenv('SUPABASE_URL')
+        supabase_key = os.getenv('SUPABASE_ANON_KEY')
+        
+        if not supabase_url or not supabase_key:
+            return {'success': False, 'error': 'Supabase環境変数が設定されていません'}
+        
+        # ヘッダーの設定
+        headers = {
+            'apikey': supabase_key,
+            'Authorization': f'Bearer {supabase_key}',
+            'Content-Type': 'application/json',
+            'Prefer': 'return=representation'
+        }
+        
+        # 対象教科の問題を取得
+        subject = Subject.objects.get(code=subject_code)
+        questions = Question.objects.filter(unit__subject=subject)
+        
+        updated_count = 0
+        failed_count = 0
+        
+        for question in questions:
+            try:
+                # PATCHリクエストで問題を更新
+                update_url = f"{supabase_url}/rest/v1/quiz_app_question?id=eq.{question.id}"
+                
+                update_data = {
+                    'accepted_alternatives': question.accepted_alternatives or []
+                }
+                
+                response = requests.patch(update_url, headers=headers, json=update_data)
+                
+                if response.status_code == 200:
+                    updated_count += 1
+                else:
+                    failed_count += 1
+                    
+            except Exception as e:
+                failed_count += 1
+        
+        return {
+            'success': True,
+            'updated_count': updated_count,
+            'failed_count': failed_count
+        }
+        
+    except Exception as e:
+        return {'success': False, 'error': str(e)}
 
 
 def process_xlsm_file(file_path: str, subject_code: str) -> Dict[str, Any]:
@@ -275,6 +327,16 @@ def save_questions_from_xlsm_data(data: List[Dict[str, Any]], subject_code: str)
     updated_count = 0
     errors = []
     
+    # 対象教科の既存の別解データを完全にクリア
+    print(f"🗑️ {subject.label_ja}の既存の別解データをクリア中...")
+    questions_to_clear = Question.objects.filter(unit__subject=subject)
+    cleared_count = 0
+    for question in questions_to_clear:
+        question.accepted_alternatives = []
+        question.save()
+        cleared_count += 1
+    print(f"✅ {cleared_count}件の問題の別解データをクリアしました")
+    
     for item in data:
         try:
             # 単元の取得または作成
@@ -301,11 +363,12 @@ def save_questions_from_xlsm_data(data: List[Dict[str, Any]], subject_code: str)
             )
             
             if not created:
-                # 既存の問題を更新
+                # 既存の問題を更新（別解データは完全に上書き）
                 question.question_type = item['question_type']
                 question.text = item['question_text']
                 question.correct_answer = item['correct_answer']
-                question.accepted_alternatives = item['alternatives']
+                # 別解データを完全にクリアしてから新しい別解を設定
+                question.accepted_alternatives = item['alternatives'] if item['alternatives'] else []
                 question.choices = item['choices']
                 question.parts_count = item['parts_count']
                 question.requires_unit_label = item['requires_unit_label']
@@ -318,8 +381,17 @@ def save_questions_from_xlsm_data(data: List[Dict[str, Any]], subject_code: str)
         except Exception as e:
             errors.append(f"問題保存エラー (ID: {item['source_id']}): {str(e)}")
     
+    # Supabaseとの同期
+    print(f"🔄 Supabaseとの別解データ同期中...")
+    sync_result = sync_alternatives_to_supabase(subject_code)
+    if sync_result['success']:
+        print(f"✅ Supabase同期完了: {sync_result['updated_count']}件更新, {sync_result['failed_count']}件失敗")
+    else:
+        print(f"⚠️ Supabase同期エラー: {sync_result['error']}")
+    
     return {
         'saved_count': saved_count,
         'updated_count': updated_count,
-        'errors': errors
+        'errors': errors,
+        'supabase_sync': sync_result
     }
