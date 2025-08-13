@@ -270,10 +270,11 @@ function validateInputs() {
             submitBtn.disabled = true;
         }
     } else {
-        // 記述問題の場合
+        // 記述問題の場合（単一解答欄または複数解答欄）
         const textInputs = document.querySelectorAll('input[type="text"]');
         let hasInput = false;
         
+        // 複数解答欄の場合、少なくとも1つの入力があれば有効
         textInputs.forEach(input => {
             if (input.value.trim() !== '') {
                 hasInput = true;

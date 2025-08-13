@@ -11,7 +11,7 @@ from django.db.models import Q, Count, Avg
 from django.utils import timezone
 from django.contrib import messages
 from .models import Subject, Unit, Question, QuizSession, QuizAttempt, Homework
-from .utils import check_answer
+from .utils import check_answer, calculate_parts_count
 
 # ロガーを設定
 logger = logging.getLogger(__name__)
@@ -149,6 +149,9 @@ class QuizQuestionView(LoginRequiredMixin, TemplateView):
         context['question_number'] = question_number
         context['total_questions'] = session.question_count
         
+        # 正解に基づいて動的にparts_countを計算
+        question.parts_count = calculate_parts_count(question.correct_answer)
+        
         return context
 
 
@@ -197,6 +200,9 @@ class QuizResultView(LoginRequiredMixin, DetailView):
         
         # 各問題の正答率を計算と選択肢の内容を追加
         for attempt in attempts:
+            # 正解に基づいて動的にparts_countを計算
+            attempt.question.parts_count = calculate_parts_count(attempt.question.correct_answer)
+            
             # その問題の全解答記録から正答率を計算
             question_attempts = QuizAttempt.objects.filter(question=attempt.question)
             if question_attempts.count() > 0:
@@ -476,6 +482,9 @@ def submit_answer(request, session_id, question_number):
             else:
                 # 問題IDが保存されていない場合はエラー
                 return redirect('quiz_app:home')
+            
+            # 正解に基づいて動的にparts_countを計算
+            question.parts_count = calculate_parts_count(question.correct_answer)
             
             # 解答を取得（複数解答欄対応）
             if question.parts_count == 1:

@@ -92,6 +92,19 @@ def split_parts(answer: str) -> List[str]:
     return [part for part in parts if part]
 
 
+def calculate_parts_count(correct_answer: str) -> int:
+    """正解に基づいて解答欄数を計算する"""
+    if not correct_answer:
+        return 1
+    
+    # 「・」の数を数える
+    dot_count = correct_answer.count('・')
+    
+    # 「・」が1つあれば解答欄を1つ追加（合計2つ）
+    # 「・」が2つあれば解答欄を2つ追加（合計3つ）
+    return dot_count + 1
+
+
 def parse_alternatives(alternatives_text: str) -> List[str]:
     """別解テキストを解析して配列に変換"""
     if not alternatives_text:
