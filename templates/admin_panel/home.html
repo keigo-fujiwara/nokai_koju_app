@@ -88,9 +88,17 @@
                                     <br>
                                     <small class="text-muted">{{ upload.uploaded_at|date:"Y-m-d H:i" }}</small>
                                 </div>
-                                <span class="badge bg-{{ upload.status|yesno:'success,warning' }}">
-                                    {{ upload.get_status_display }}
-                                </span>
+                                {% if upload.status == 'pending' %}
+                                    <span class="badge bg-secondary">{{ upload.get_status_display }}</span>
+                                {% elif upload.status == 'processing' %}
+                                    <span class="badge bg-warning">{{ upload.get_status_display }}</span>
+                                {% elif upload.status == 'completed' %}
+                                    <span class="badge bg-success">{{ upload.get_status_display }}</span>
+                                {% elif upload.status == 'failed' %}
+                                    <span class="badge bg-danger">{{ upload.get_status_display }}</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ upload.get_status_display }}</span>
+                                {% endif %}
                             </div>
                         </div>
                         {% endfor %}
