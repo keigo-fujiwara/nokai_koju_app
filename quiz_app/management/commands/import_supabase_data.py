@@ -27,6 +27,12 @@ class Command(BaseCommand):
             if not supabase_url or not supabase_key:
                 self.stdout.write(self.style.ERROR('❌ Supabase環境変数が設定されていません'))
                 self.stdout.write('SUPABASE_URL と SUPABASE_ANON_KEY を設定してください')
+                self.stdout.write('')
+                self.stdout.write('Render環境変数の設定方法:')
+                self.stdout.write('1. Renderダッシュボード → quiz-app → Environment')
+                self.stdout.write('2. 以下の環境変数を追加:')
+                self.stdout.write('   SUPABASE_URL = https://rmnhmqjddrewtohbtgsn.supabase.co')
+                self.stdout.write('   SUPABASE_ANON_KEY = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJtbmhtcWpkZHJld3RvaGJ0Z3NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ5NzA4OTUsImV4cCI6MjA3MDU0Njg5NX0.dZAYqcxtYmTL19MbbbGzk068aBWWxLKijKl2EAx4hX8')
                 return
             
             # 1. 既存のデータをクリア（管理者ユーザーは保持）
