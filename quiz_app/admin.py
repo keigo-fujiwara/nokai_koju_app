@@ -1,4 +1,8 @@
 from django.contrib import admin
+from django.core.management import call_command
+from django.contrib import messages
+from django.http import HttpResponseRedirect
+from django.urls import path
 from .models import Subject, Unit, Question, QuizSession, QuizAttempt, Homework
 
 
@@ -18,7 +22,7 @@ class UnitAdmin(admin.ModelAdmin):
 
 @admin.register(Question)
 class QuestionAdmin(admin.ModelAdmin):
-    list_display = ['unit', 'source_id', 'text_short', 'parts_count', 'requires_unit_label']
+    list_display = ['unit', 'source_id', 'text_short', 'parts_count', 'requires_unit_label', 'alternatives_count']
     list_filter = ['unit', 'requires_unit_label', 'parts_count', 'created_at']
     search_fields = ['text', 'correct_answer', 'source_id']
     ordering = ['unit', 'source_id']
@@ -28,7 +32,7 @@ class QuestionAdmin(admin.ModelAdmin):
             'fields': ('unit', 'source_id', 'text')
         }),
         ('解答設定', {
-            'fields': ('correct_answer', 'accepted_alternatives', 'parts_count')
+            'fields': ('correct_answer', 'accepted_alternatives', 'alternatives_display', 'parts_count')
         }),
         ('単位設定', {
             'fields': ('requires_unit_label', 'unit_label_text')
@@ -38,11 +42,80 @@ class QuestionAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         }),
     )
-    readonly_fields = ['created_at', 'updated_at']
+    readonly_fields = ['created_at', 'updated_at', 'alternatives_display']
     
     def text_short(self, obj):
         return obj.text[:50] + '...' if len(obj.text) > 50 else obj.text
     text_short.short_description = '問題文'
+    
+    def alternatives_count(self, obj):
+        """別解の数を表示"""
+        alternatives = obj.accepted_alternatives or []
+        if isinstance(alternatives, str):
+            try:
+                import json
+                alternatives = json.loads(alternatives)
+            except json.JSONDecodeError:
+                alternatives = []
+        
+        if not isinstance(alternatives, list):
+            alternatives = []
+        
+        count = len(alternatives)
+        if count == 0:
+            return 'なし'
+        elif count == 1:
+            return f'{count}個'
+        else:
+            return f'{count}個'
+    alternatives_count.short_description = '別解数'
+    
+    def alternatives_display(self, obj):
+        """別解を読みやすく表示"""
+        alternatives = obj.accepted_alternatives or []
+        if isinstance(alternatives, str):
+            try:
+                import json
+                alternatives = json.loads(alternatives)
+            except json.JSONDecodeError:
+                alternatives = []
+        
+        if not isinstance(alternatives, list):
+            alternatives = []
+        
+        if not alternatives:
+            return '別解なし'
+        
+        html = '<ul>'
+        for i, alt in enumerate(alternatives, 1):
+            html += f'<li>{i}. {alt}</li>'
+        html += '</ul>'
+        
+        return html
+    alternatives_display.short_description = '別解一覧'
+    alternatives_display.allow_tags = True
+    
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path('sync-from-supabase/', self.admin_site.admin_view(self.sync_from_supabase), name='quiz_app_question_sync_from_supabase'),
+        ]
+        return custom_urls + urls
+    
+    def sync_from_supabase(self, request):
+        """Supabaseからデータを同期"""
+        try:
+            # ドライランで実行して結果を確認
+            call_command('sync_from_supabase', dry_run=True, verbosity=0)
+            
+            # 実際の同期を実行
+            call_command('sync_from_supabase', verbosity=0)
+            
+            messages.success(request, 'Supabaseからの同期が完了しました。')
+        except Exception as e:
+            messages.error(request, f'同期中にエラーが発生しました: {str(e)}')
+        
+        return HttpResponseRedirect('../')
 
 
 @admin.register(QuizSession)
