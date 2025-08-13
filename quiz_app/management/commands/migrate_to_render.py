@@ -22,16 +22,28 @@ class Command(BaseCommand):
             # 3. データ確認
             self.stdout.write("🔍 データ確認中...")
             subject_count = Subject.objects.count()
+            unit_count = Unit.objects.count()
             question_count = Question.objects.count()
             user_count = User.objects.count()
             
             self.stdout.write(f"✅ 移行完了:")
             self.stdout.write(f"  - 教科: {subject_count}件")
+            self.stdout.write(f"  - 単元: {unit_count}件")
             self.stdout.write(f"  - 問題: {question_count}件")
             self.stdout.write(f"  - ユーザー: {user_count}件")
             
+            # 4. 詳細確認
+            if subject_count > 0:
+                self.stdout.write("📚 教科詳細:")
+                for subject in Subject.objects.all():
+                    self.stdout.write(f"  - {subject.name}")
+                    for unit in subject.units.all():
+                        self.stdout.write(f"    📖 {unit.name} (問題数: {unit.questions.count()})")
+            
         except Exception as e:
             self.stdout.write(self.style.ERROR(f"❌ エラーが発生しました: {e}"))
+            import traceback
+            self.stdout.write(self.style.ERROR(traceback.format_exc()))
             return False
         
         return True
