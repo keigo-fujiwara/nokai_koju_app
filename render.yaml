@@ -28,12 +28,12 @@ services:
         sync: false
       - key: EMAIL_HOST_PASSWORD
         sync: false
-             - key: SITE_ID
-         value: 1
-       - key: SUPABASE_URL
-         sync: false
-       - key: SUPABASE_ANON_KEY
-         sync: false
+      - key: SITE_ID
+        value: 1
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false
 
 databases:
   - name: quiz-app-db
