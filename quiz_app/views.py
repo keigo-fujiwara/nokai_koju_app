@@ -457,54 +457,54 @@ def submit_answer(request, session_id, question_number):
                 # 問題IDが保存されていない場合はエラー
                 logger.error(f"submit_answer: 問題IDが見つかりません: 問題番号={question_number}, セッションID={session_id}")
                 return redirect('quiz_app:home')
-        
-        # 解答を取得（複数解答欄対応）
-        if question.parts_count == 1:
-            answer_text = request.POST.get('answer_1', '')
             
-            # 選択問題の場合、選択肢の内容を取得
-            if question.question_type == 'choice':
-                try:
-                    choice_index = int(answer_text) - 1
-                    
-                    # セッションに保存された選択肢の並べ替え情報を使用
-                    if session.choice_mappings and str(question.id) in session.choice_mappings:
-                        shuffled_choices = session.choice_mappings[str(question.id)]
-                        if 0 <= choice_index < len(shuffled_choices):
-                            answer_text = shuffled_choices[choice_index]
-                    elif hasattr(question, 'shuffled_choices'):
-                        # フォールバック: 問題オブジェクトの並べ替え情報を使用
-                        if 0 <= choice_index < len(question.shuffled_choices):
-                            answer_text = question.shuffled_choices[choice_index]
-                except ValueError:
-                    pass  # 数字でない場合はそのまま使用
-        else:
-            answers = []
-            for i in range(1, question.parts_count + 1):
-                answer = request.POST.get(f'answer_{i}', '')
-                answers.append(answer)
+            # 解答を取得（複数解答欄対応）
+            if question.parts_count == 1:
+                answer_text = request.POST.get('answer_1', '')
+                
+                # 選択問題の場合、選択肢の内容を取得
+                if question.question_type == 'choice':
+                    try:
+                        choice_index = int(answer_text) - 1
+                        
+                        # セッションに保存された選択肢の並べ替え情報を使用
+                        if session.choice_mappings and str(question.id) in session.choice_mappings:
+                            shuffled_choices = session.choice_mappings[str(question.id)]
+                            if 0 <= choice_index < len(shuffled_choices):
+                                answer_text = shuffled_choices[choice_index]
+                        elif hasattr(question, 'shuffled_choices'):
+                            # フォールバック: 問題オブジェクトの並べ替え情報を使用
+                            if 0 <= choice_index < len(question.shuffled_choices):
+                                answer_text = question.shuffled_choices[choice_index]
+                    except ValueError:
+                        pass  # 数字でない場合はそのまま使用
+            else:
+                answers = []
+                for i in range(1, question.parts_count + 1):
+                    answer = request.POST.get(f'answer_{i}', '')
+                    answers.append(answer)
+                
+                answer_text = '・'.join(answers)
             
-            answer_text = '・'.join(answers)
-        
-        # 採点
-        is_correct = check_answer(answer_text, question)
-        
-        # 実際の解答時間を取得
-        time_spent = request.POST.get('time_spent', 20)
-        try:
-            time_spent = int(time_spent)
-        except ValueError:
-            time_spent = 20
-        
-        # 解答記録を保存
-        QuizAttempt.objects.create(
-            session=session,
-            question=question,
-            answer_text=answer_text,
-            is_correct=is_correct,
-            time_spent_sec=time_spent
-        )
-        
+            # 採点
+            is_correct = check_answer(answer_text, question)
+            
+            # 実際の解答時間を取得
+            time_spent = request.POST.get('time_spent', 20)
+            try:
+                time_spent = int(time_spent)
+            except ValueError:
+                time_spent = 20
+            
+            # 解答記録を保存
+            QuizAttempt.objects.create(
+                session=session,
+                question=question,
+                answer_text=answer_text,
+                is_correct=is_correct,
+                time_spent_sec=time_spent
+            )
+            
             # 次の問題または結果ページへ
             if question_number < session.question_count:
                 return redirect('quiz_app:quiz_question', session_id=session_id, question_number=question_number + 1)
