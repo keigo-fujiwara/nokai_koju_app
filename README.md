@@ -133,7 +133,7 @@ python manage.py runserver
 
 ### テストユーザー
 - 管理者: `admin` / `admin123`
-- 生徒: `student001` / `student123`
+- 生徒: `student001` / `testuser001`
 
 ### 管理画面
 - URL: `/admin/`
