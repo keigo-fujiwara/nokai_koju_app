@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.http import HttpResponseRedirect
 from django.urls import path
 from .models import Subject, Unit, Question, QuizSession, QuizAttempt, Homework
+from django.conf import settings
 
 
 @admin.register(Subject)
@@ -99,23 +100,54 @@ class QuestionAdmin(admin.ModelAdmin):
         urls = super().get_urls()
         custom_urls = [
             path('sync-from-supabase/', self.admin_site.admin_view(self.sync_from_supabase), name='quiz_app_question_sync_from_supabase'),
+            path('sync-to-supabase/', self.admin_site.admin_view(self.sync_to_supabase), name='quiz_app_question_sync_to_supabase'),
+            path('sync-bidirectional/', self.admin_site.admin_view(self.sync_bidirectional), name='quiz_app_question_sync_bidirectional'),
         ]
         return custom_urls + urls
     
     def sync_from_supabase(self, request):
-        """Supabaseからデータを同期"""
+        """SupabaseからDjangoに同期"""
         try:
-            # ドライランで実行して結果を確認
-            call_command('sync_from_supabase', dry_run=True, verbosity=0)
-            
-            # 実際の同期を実行
-            call_command('sync_from_supabase', verbosity=0)
-            
-            messages.success(request, 'Supabaseからの同期が完了しました。')
+            call_command('sync_bidirectional', direction='supabase-to-django', verbosity=0)
+            messages.success(request, 'SupabaseからDjangoへの同期が完了しました。')
         except Exception as e:
             messages.error(request, f'同期中にエラーが発生しました: {str(e)}')
         
         return HttpResponseRedirect('../')
+    
+    def sync_to_supabase(self, request):
+        """DjangoからSupabaseに同期"""
+        try:
+            call_command('sync_bidirectional', direction='django-to-supabase', verbosity=0)
+            messages.success(request, 'DjangoからSupabaseへの同期が完了しました。')
+        except Exception as e:
+            messages.error(request, f'同期中にエラーが発生しました: {str(e)}')
+        
+        return HttpResponseRedirect('../')
+    
+    def sync_bidirectional(self, request):
+        """双方向同期"""
+        try:
+            call_command('sync_bidirectional', direction='bidirectional', verbosity=0)
+            messages.success(request, '双方向同期が完了しました。')
+        except Exception as e:
+            messages.error(request, f'同期中にエラーが発生しました: {str(e)}')
+        
+        return HttpResponseRedirect('../')
+
+    def save_model(self, request, obj, form, change):
+        """問題保存時にSupabaseに自動同期"""
+        super().save_model(request, obj, form, change)
+        
+        # 本番環境でのみ自動同期を実行
+        if not settings.DEBUG:
+            try:
+                from django.core.management import call_command
+                # この問題のみをSupabaseに同期
+                call_command('sync_bidirectional', direction='django-to-supabase', verbosity=0)
+            except Exception as e:
+                # 自動同期でエラーが発生しても問題保存は継続
+                pass
 
 
 @admin.register(QuizSession)

@@ -3,8 +3,18 @@
 
 {% block object-tools-items %}
     <li>
-        <a href="{% url 'admin:quiz_app_question_sync_from_supabase' %}" class="btn btn-high btn-success">
-            <i class="fas fa-sync-alt"></i> Supabaseから同期
+        <a href="{% url 'admin:quiz_app_question_sync_bidirectional' %}" class="btn btn-high btn-primary">
+            <i class="fas fa-sync-alt"></i> 双方向同期
+        </a>
+    </li>
+    <li>
+        <a href="{% url 'admin:quiz_app_question_sync_to_supabase' %}" class="btn btn-high btn-success">
+            <i class="fas fa-upload"></i> Django→Supabase
+        </a>
+    </li>
+    <li>
+        <a href="{% url 'admin:quiz_app_question_sync_from_supabase' %}" class="btn btn-high btn-info">
+            <i class="fas fa-download"></i> Supabase→Django
         </a>
     </li>
     {{ block.super }}
