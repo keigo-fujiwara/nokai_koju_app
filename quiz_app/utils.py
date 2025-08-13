@@ -162,7 +162,6 @@ def sync_alternatives_to_supabase(subject_code: str) -> Dict[str, Any]:
         
         # 本番環境でのみSupabase同期を実行
         if not supabase_url or not supabase_key:
-            print("⚠️ Supabase環境変数が設定されていないため、同期をスキップします")
             return {
                 'success': True,
                 'updated_count': 0,
@@ -170,8 +169,6 @@ def sync_alternatives_to_supabase(subject_code: str) -> Dict[str, Any]:
                 'errors': [],
                 'skipped': True
             }
-        
-        print(f"🔄 Supabase同期開始 - URL: {supabase_url}")
         
         headers = {
             'apikey': supabase_key,
@@ -182,7 +179,6 @@ def sync_alternatives_to_supabase(subject_code: str) -> Dict[str, Any]:
         
         subject = Subject.objects.get(code=subject_code)
         questions = Question.objects.filter(unit__subject=subject)
-        print(f"📊 同期対象問題数: {questions.count()}件")
         
         updated_count = 0
         failed_count = 0
@@ -208,41 +204,27 @@ def sync_alternatives_to_supabase(subject_code: str) -> Dict[str, Any]:
                     'accepted_alternatives': alternatives
                 }
                 
-                print(f"🔄 問題ID {question.id} を更新中... 別解: {alternatives}")
-                
                 response = requests.patch(update_url, headers=headers, json=update_data, timeout=30)
                 
                 if response.status_code == 200:
                     updated_count += 1
-                    print(f"✅ 問題ID {question.id} 更新成功")
                 else:
                     failed_count += 1
                     error_msg = f"問題ID {question.id} 更新失敗 ({response.status_code}): {response.text}"
                     errors.append(error_msg)
-                    print(f"❌ {error_msg}")
                     
             except requests.exceptions.Timeout:
                 failed_count += 1
                 error_msg = f"問題ID {question.id} の更新タイムアウト"
                 errors.append(error_msg)
-                print(f"❌ {error_msg}")
             except requests.exceptions.RequestException as e:
                 failed_count += 1
                 error_msg = f"問題ID {question.id} のネットワークエラー: {str(e)}"
                 errors.append(error_msg)
-                print(f"❌ {error_msg}")
             except Exception as e:
                 failed_count += 1
                 error_msg = f"問題ID {question.id} の更新エラー: {str(e)}"
                 errors.append(error_msg)
-                print(f"❌ {error_msg}")
-        
-        print(f"🎉 Supabase同期完了: {updated_count}件成功, {failed_count}件失敗")
-        
-        if errors:
-            print("⚠️ エラー詳細:")
-            for error in errors[:5]:  # 最初の5件のみ表示
-                print(f"  - {error}")
         
         return {
             'success': True,
@@ -253,7 +235,6 @@ def sync_alternatives_to_supabase(subject_code: str) -> Dict[str, Any]:
         
     except Exception as e:
         error_msg = f"Supabase同期エラー: {str(e)}"
-        print(f"❌ {error_msg}")
         return {'success': False, 'error': error_msg}
 
 
@@ -377,14 +358,10 @@ def save_questions_from_xlsm_data(data: List[Dict[str, Any]], subject_code: str)
     errors = []
     
     # 対象教科の既存の別解データを完全にクリア
-    print(f"🗑️ {subject.label_ja}の既存の別解データをクリア中...")
     questions_to_clear = Question.objects.filter(unit__subject=subject)
-    cleared_count = 0
     for question in questions_to_clear:
         question.accepted_alternatives = []
         question.save()
-        cleared_count += 1
-    print(f"✅ {cleared_count}件の問題の別解データをクリアしました")
     
     for item in data:
         try:
@@ -431,16 +408,7 @@ def save_questions_from_xlsm_data(data: List[Dict[str, Any]], subject_code: str)
             errors.append(f"問題保存エラー (ID: {item['source_id']}): {str(e)}")
     
     # Supabaseとの同期
-    print(f"🔄 Supabaseとの別解データ同期中...")
     sync_result = sync_alternatives_to_supabase(subject_code)
-    if sync_result['success']:
-        if sync_result.get('skipped'):
-            print(f"⚠️ Supabase同期をスキップしました（ローカル環境）")
-        else:
-            print(f"✅ Supabase同期完了: {sync_result['updated_count']}件更新, {sync_result['failed_count']}件失敗")
-    else:
-        print(f"⚠️ Supabase同期エラー: {sync_result['error']}")
-        print(f"⚠️ ただし、ローカルデータベースへの保存は完了しています")
     
     return {
         'saved_count': saved_count,
