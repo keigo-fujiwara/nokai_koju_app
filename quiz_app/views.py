@@ -444,18 +444,19 @@ class SubmitAnswerView(LoginRequiredMixin, TemplateView):
 @login_required
 def submit_answer(request, session_id, question_number):
     """解答提出処理"""
-    if request.method == 'POST':
-        session = get_object_or_404(QuizSession, id=session_id, user=request.user)
-        
-        # 問題を取得（保存された問題IDを使用）
-        if session.question_ids and str(question_number) in session.question_ids:
-            question_id = session.question_ids[str(question_number)]
-            question = get_object_or_404(Question, id=question_id)
-            logger.info(f"submit_answer: 保存された問題IDを使用: 問題番号={question_number}, 問題ID={question_id}, 問題文={question.text[:50]}...")
-        else:
-            # 問題IDが保存されていない場合はエラー
-            logger.error(f"submit_answer: 問題IDが見つかりません: 問題番号={question_number}, セッションID={session_id}")
-            return redirect('quiz_app:home')
+    try:
+        if request.method == 'POST':
+            session = get_object_or_404(QuizSession, id=session_id, user=request.user)
+            
+            # 問題を取得（保存された問題IDを使用）
+            if session.question_ids and str(question_number) in session.question_ids:
+                question_id = session.question_ids[str(question_number)]
+                question = get_object_or_404(Question, id=question_id)
+                logger.info(f"submit_answer: 保存された問題IDを使用: 問題番号={question_number}, 問題ID={question_id}, 問題文={question.text[:50]}...")
+            else:
+                # 問題IDが保存されていない場合はエラー
+                logger.error(f"submit_answer: 問題IDが見つかりません: 問題番号={question_number}, セッションID={session_id}")
+                return redirect('quiz_app:home')
         
         # 解答を取得（複数解答欄対応）
         if question.parts_count == 1:
@@ -504,17 +505,24 @@ def submit_answer(request, session_id, question_number):
             time_spent_sec=time_spent
         )
         
-        # 次の問題または結果ページへ
-        if question_number < session.question_count:
-            return redirect('quiz_app:quiz_question', session_id=session_id, question_number=question_number + 1)
-        else:
-            # クイズ終了処理
-            session.finished_at = timezone.now()
-            session.total_score = (session.attempts.filter(is_correct=True).count() / session.question_count) * 100
-            session.save()
-            return redirect('quiz_app:quiz_result', pk=session_id)
-    
-    return redirect('quiz_app:home')
+            # 次の問題または結果ページへ
+            if question_number < session.question_count:
+                return redirect('quiz_app:quiz_question', session_id=session_id, question_number=question_number + 1)
+            else:
+                # クイズ終了処理
+                session.finished_at = timezone.now()
+                session.total_score = (session.attempts.filter(is_correct=True).count() / session.question_count) * 100
+                session.save()
+                return redirect('quiz_app:quiz_result', pk=session_id)
+        
+        return redirect('quiz_app:home')
+        
+    except Exception as e:
+        logger.error(f"submit_answer: エラーが発生しました: {e}")
+        logger.error(f"session_id: {session_id}, question_number: {question_number}")
+        import traceback
+        logger.error(traceback.format_exc())
+        return redirect('quiz_app:home')
 
 
 class QuizStatusView(LoginRequiredMixin, TemplateView):
